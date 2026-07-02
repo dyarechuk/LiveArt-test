@@ -1,11 +1,19 @@
-export interface EditorImage {
+export interface OriginalImage {
   id: string
   file: File
   name: string
+  mimeType: string
   size: number
-  type: string
-  previewUrl: string
+  objectUrl: string
+  naturalWidth: number
+  naturalHeight: number
   createdAt: string
+}
+
+export interface EditorAdjustments {
+  brightness: number
+  contrast: number
+  saturation: number
 }
 
 export interface EditorSelection {

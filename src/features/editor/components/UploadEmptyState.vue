@@ -21,6 +21,18 @@
         Choose image
       </v-btn>
 
+      <v-alert
+        v-if="editor.uploadError"
+        class="upload-empty-state__alert"
+        closable
+        density="comfortable"
+        type="error"
+        variant="tonal"
+        @click:close="editor.clearUploadError"
+      >
+        {{ editor.uploadError }}
+      </v-alert>
+
       <input
         ref="fileInput"
         accept="image/*"
@@ -34,31 +46,28 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import { isSupportedImageFile } from '@/features/editor/utils/isSupportedImageFile'
+import { useEditorStore } from '@/features/editor/store/useEditorStore'
 
-const emit = defineEmits<{
-  fileSelected: [file: File]
-}>()
-
+const editor = useEditorStore()
 const fileInput = ref<HTMLInputElement>()
 const isDragging = ref(false)
 
-function selectFile(file: File | undefined) {
-  if (!file || !isSupportedImageFile(file)) {
+async function selectFile(file: File | undefined) {
+  if (!file) {
     return
   }
 
-  emit('fileSelected', file)
+  await editor.loadImage(file)
 }
 
-function handleDrop(event: DragEvent) {
+async function handleDrop(event: DragEvent) {
   isDragging.value = false
-  selectFile(event.dataTransfer?.files.item(0) ?? undefined)
+  await selectFile(event.dataTransfer?.files.item(0) ?? undefined)
 }
 
-function handleInputChange(event: Event) {
+async function handleInputChange(event: Event) {
   const input = event.target as HTMLInputElement
-  selectFile(input.files?.item(0) ?? undefined)
+  await selectFile(input.files?.item(0) ?? undefined)
   input.value = ''
 }
 </script>
@@ -115,6 +124,11 @@ function handleInputChange(event: Event) {
 
 .upload-empty-state__input {
   display: none;
+}
+
+.upload-empty-state__alert {
+  width: min(100%, 420px);
+  text-align: left;
 }
 
 @media (max-width: 640px) {

@@ -3,19 +3,19 @@
     <div v-if="editor.hasImage" class="image-workspace__stage">
       <div class="image-workspace__canvas">
         <img
-          v-if="editor.sourceImage"
-          :alt="editor.sourceImage.name"
-          :src="editor.sourceImage.previewUrl"
+          v-if="editor.originalImage && editor.imageDisplayUrl"
+          :alt="editor.originalImage.name"
+          :src="editor.imageDisplayUrl"
           class="image-workspace__image"
         />
       </div>
-      <div v-if="editor.sourceImage" class="image-workspace__meta">
-        <span>{{ editor.sourceImage.name }}</span>
+      <div v-if="editor.originalImage" class="image-workspace__meta">
+        <span>{{ editor.originalImage.name }}</span>
         <span>{{ imageDetails }}</span>
       </div>
     </div>
 
-    <UploadEmptyState v-else @file-selected="editor.loadImage" />
+    <UploadEmptyState v-else />
   </main>
 </template>
 
@@ -28,11 +28,11 @@ import { formatFileSize } from '@/features/editor/utils/formatFileSize'
 const editor = useEditorStore()
 
 const imageDetails = computed(() => {
-  if (!editor.sourceImage) {
+  if (!editor.originalImage) {
     return ''
   }
 
-  return `${formatFileSize(editor.sourceImage.size)} · ${editor.sourceImage.type}`
+  return `${editor.originalImage.naturalWidth} x ${editor.originalImage.naturalHeight} px | ${formatFileSize(editor.originalImage.size)} | ${editor.originalImage.mimeType}`
 })
 </script>
 

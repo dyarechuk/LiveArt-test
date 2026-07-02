@@ -5,16 +5,36 @@
         <p class="editing-panel__eyebrow">Editor</p>
         <h2>Adjustments</h2>
       </div>
-      <v-btn
-        aria-label="Reset workspace"
-        :disabled="!editor.hasImage"
-        icon="mdi-refresh"
-        variant="text"
-        @click="editor.resetImage"
-      />
+      <div class="editing-panel__header-actions">
+        <v-btn
+          aria-label="Reset all edits"
+          :disabled="!editor.hasImage"
+          icon="mdi-refresh"
+          variant="text"
+          @click="editor.resetEdits"
+        />
+        <v-btn
+          aria-label="Remove image"
+          :disabled="!editor.hasImage"
+          icon="mdi-delete-outline"
+          variant="text"
+          @click="editor.removeImage"
+        />
+      </div>
     </div>
 
     <v-divider />
+
+    <v-alert
+      v-if="editor.uploadError"
+      closable
+      density="comfortable"
+      type="error"
+      variant="tonal"
+      @click:close="editor.clearUploadError"
+    >
+      {{ editor.uploadError }}
+    </v-alert>
 
     <section class="editing-panel__section">
       <h3>Source</h3>
@@ -23,13 +43,21 @@
           <dt>Status</dt>
           <dd>{{ editor.hasImage ? 'Image loaded' : 'Waiting for upload' }}</dd>
         </div>
-        <div v-if="editor.sourceImage">
+        <div v-if="editor.originalImage">
           <dt>File</dt>
-          <dd>{{ editor.sourceImage.name }}</dd>
+          <dd>{{ editor.originalImage.name }}</dd>
         </div>
-        <div v-if="editor.sourceImage">
+        <div v-if="editor.originalImage">
+          <dt>Type</dt>
+          <dd>{{ editor.originalImage.mimeType }}</dd>
+        </div>
+        <div v-if="editor.originalImage">
+          <dt>Dimensions</dt>
+          <dd>{{ editor.originalImage.naturalWidth }} x {{ editor.originalImage.naturalHeight }} px</dd>
+        </div>
+        <div v-if="editor.originalImage">
           <dt>Size</dt>
-          <dd>{{ formatFileSize(editor.sourceImage.size) }}</dd>
+          <dd>{{ formatFileSize(editor.originalImage.size) }}</dd>
         </div>
       </dl>
     </section>
@@ -37,11 +65,54 @@
     <v-divider />
 
     <section class="editing-panel__section">
-      <h3>Foundation</h3>
+      <h3>Actions</h3>
+      <div class="editing-panel__actions">
+        <v-btn
+          :loading="editor.isLoadingImage"
+          block
+          color="primary"
+          prepend-icon="mdi-image-plus"
+          @click="fileInput?.click()"
+        >
+          {{ editor.hasImage ? 'Replace image' : 'Choose image' }}
+        </v-btn>
+        <v-btn
+          :disabled="!editor.hasImage"
+          block
+          prepend-icon="mdi-refresh"
+          variant="tonal"
+          @click="editor.resetEdits"
+        >
+          Reset all
+        </v-btn>
+        <v-btn
+          :disabled="!editor.hasImage"
+          block
+          color="error"
+          prepend-icon="mdi-delete-outline"
+          variant="tonal"
+          @click="editor.removeImage"
+        >
+          Remove image
+        </v-btn>
+        <input
+          ref="fileInput"
+          accept="image/*"
+          class="editing-panel__input"
+          type="file"
+          @change="handleInputChange"
+        />
+      </div>
+    </section>
+
+    <v-divider />
+
+    <section class="editing-panel__section">
+      <h3>State model</h3>
       <v-list bg-color="transparent" density="compact" lines="two">
-        <v-list-item prepend-icon="mdi-layers-outline" title="Original preserved" subtitle="Future edits can derive previews without mutating the source file." />
-        <v-list-item prepend-icon="mdi-history" title="Operation-ready state" subtitle="The store is prepared for ordered edit operations and selection state." />
-        <v-list-item prepend-icon="mdi-monitor-dashboard" title="Responsive shell" subtitle="Workspace and controls adapt across desktop and smaller screens." />
+        <v-list-item prepend-icon="mdi-layers-outline" title="Original preserved" subtitle="The uploaded file and source URL are stored separately from edit operations." />
+        <v-list-item prepend-icon="mdi-history" title="Edit operations" :subtitle="`${editor.operations.length} queued operations`" />
+        <v-list-item prepend-icon="mdi-select-drag" title="Selection" :subtitle="editor.selection ? 'Active selection' : 'No active selection'" />
       </v-list>
     </section>
 
@@ -57,10 +128,23 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 import { formatFileSize } from '@/features/editor/utils/formatFileSize'
 
 const editor = useEditorStore()
+const fileInput = ref<HTMLInputElement>()
+
+async function handleInputChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.item(0) ?? undefined
+
+  if (file) {
+    await editor.loadImage(file)
+  }
+
+  input.value = ''
+}
 </script>
 
 <style scoped>
@@ -81,6 +165,12 @@ const editor = useEditorStore()
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+.editing-panel__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .editing-panel__eyebrow,
@@ -139,6 +229,15 @@ const editor = useEditorStore()
   margin: 0;
   overflow-wrap: anywhere;
   font-size: 0.94rem;
+}
+
+.editing-panel__actions {
+  display: grid;
+  gap: 10px;
+}
+
+.editing-panel__input {
+  display: none;
 }
 
 @media (max-width: 960px) {
