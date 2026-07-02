@@ -16,6 +16,8 @@ export interface EditorAdjustments {
   saturation: number
 }
 
+export type EditorAdjustmentKey = keyof EditorAdjustments
+
 export interface EditorSelection {
   x: number
   y: number

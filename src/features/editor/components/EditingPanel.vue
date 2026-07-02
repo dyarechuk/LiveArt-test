@@ -108,6 +108,12 @@
     <v-divider />
 
     <section class="editing-panel__section">
+      <AdjustmentPanel />
+    </section>
+
+    <v-divider />
+
+    <section class="editing-panel__section">
       <h3>State model</h3>
       <v-list bg-color="transparent" density="compact" lines="two">
         <v-list-item prepend-icon="mdi-layers-outline" title="Original preserved" subtitle="The uploaded file and source URL are stored separately from edit operations." />
@@ -116,19 +122,12 @@
       </v-list>
     </section>
 
-    <v-divider />
-
-    <section class="editing-panel__section editing-panel__section--muted">
-      <h3>Next controls</h3>
-      <v-slider disabled label="Brightness" max="100" min="-100" model-value="0" />
-      <v-slider disabled label="Contrast" max="100" min="-100" model-value="0" />
-      <v-slider disabled label="Saturation" max="100" min="-100" model-value="0" />
-    </section>
   </aside>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import AdjustmentPanel from '@/features/editor/components/AdjustmentPanel.vue'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 import { formatFileSize } from '@/features/editor/utils/formatFileSize'
 
@@ -201,10 +200,6 @@ async function handleInputChange(event: Event) {
 .editing-panel__section {
   display: grid;
   gap: 14px;
-}
-
-.editing-panel__section--muted {
-  opacity: 0.62;
 }
 
 .editing-panel__source {

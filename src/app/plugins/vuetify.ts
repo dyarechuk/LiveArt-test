@@ -2,8 +2,40 @@ import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
+import {
+  VAlert,
+  VApp,
+  VAppBar,
+  VAvatar,
+  VBtn,
+  VDivider,
+  VIcon,
+  VLayout,
+  VList,
+  VListItem,
+  VMain,
+  VSlider
+} from 'vuetify/components'
+import { Ripple } from 'vuetify/directives'
 
 export const vuetify = createVuetify({
+  components: {
+    VAlert,
+    VApp,
+    VAppBar,
+    VAvatar,
+    VBtn,
+    VDivider,
+    VIcon,
+    VLayout,
+    VList,
+    VListItem,
+    VMain,
+    VSlider
+  },
+  directives: {
+    Ripple
+  },
   icons: {
     defaultSet: 'mdi',
     aliases,

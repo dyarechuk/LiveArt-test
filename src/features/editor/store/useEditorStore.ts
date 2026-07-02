@@ -1,18 +1,20 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import type {
+  EditorAdjustmentKey,
   EditorAdjustments,
   EditorOperation,
   EditorSelection,
   OriginalImage
 } from '@/features/editor/types/editor'
+import { buildAdjustmentFilter } from '@/features/editor/utils/buildAdjustmentFilter'
 import { isSupportedImageFile } from '@/features/editor/utils/isSupportedImageFile'
 import { readImageDimensions } from '@/features/editor/utils/readImageDimensions'
 
 const defaultAdjustments: EditorAdjustments = {
-  brightness: 0,
-  contrast: 0,
-  saturation: 0
+  brightness: 100,
+  contrast: 100,
+  saturation: 100
 }
 
 export const useEditorStore = defineStore('editor', () => {
@@ -25,7 +27,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isLoadingImage = ref(false)
 
   const hasImage = computed(() => originalImage.value !== null)
-  const imageDisplayUrl = computed(() => originalImage.value?.objectUrl ?? null)
+  const previewFilter = computed(() => buildAdjustmentFilter(adjustments.value))
   const hasEdits = computed(() => {
     return (
       operations.value.length > 0 ||
@@ -86,6 +88,18 @@ export const useEditorStore = defineStore('editor', () => {
   function resetEdits() {
     operations.value = []
     selection.value = null
+    resetAllAdjustments()
+  }
+
+  function setAdjustment(key: EditorAdjustmentKey, value: number) {
+    adjustments.value[key] = clampAdjustmentValue(value)
+  }
+
+  function resetAdjustment(key: EditorAdjustmentKey) {
+    adjustments.value[key] = defaultAdjustments[key]
+  }
+
+  function resetAllAdjustments() {
     adjustments.value = { ...defaultAdjustments }
   }
 
@@ -107,6 +121,10 @@ export const useEditorStore = defineStore('editor', () => {
     }
   }
 
+  function clampAdjustmentValue(value: number) {
+    return Math.min(200, Math.max(0, Math.round(value)))
+  }
+
   return {
     originalImage,
     operations,
@@ -115,10 +133,13 @@ export const useEditorStore = defineStore('editor', () => {
     uploadError,
     isLoadingImage,
     hasImage,
-    imageDisplayUrl,
+    previewFilter,
     hasEdits,
     loadImage,
     resetEdits,
+    setAdjustment,
+    resetAdjustment,
+    resetAllAdjustments,
     removeImage,
     clearUploadError
   }
