@@ -10,13 +10,13 @@
       />
       <ImagePreview
         v-else-if="editor.originalImage"
-        :crop="editor.crop"
-        :filter="editor.previewFilter"
+        :crop="editor.displayCrop"
+        :filter="editor.displayFilter"
         :image="editor.originalImage"
       />
       <div v-if="editor.originalImage" class="image-workspace__meta">
         <span>{{ editor.originalImage.name }}</span>
-        <span>{{ imageDetails }}</span>
+        <span>{{ previewDetails }}</span>
       </div>
     </div>
 
@@ -40,6 +40,14 @@ const imageDetails = computed(() => {
   }
 
   return `${editor.originalImage.naturalWidth} x ${editor.originalImage.naturalHeight} px | ${formatFileSize(editor.originalImage.size)} | ${editor.originalImage.mimeType}`
+})
+
+const previewDetails = computed(() => {
+  if (!imageDetails.value) {
+    return ''
+  }
+
+  return `${editor.previewMode === 'current' ? 'Current preview' : 'Original preview'} | ${imageDetails.value}`
 })
 </script>
 

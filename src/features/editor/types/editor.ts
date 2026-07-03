@@ -18,6 +18,8 @@ export interface EditorAdjustments {
 
 export type EditorAdjustmentKey = keyof EditorAdjustments
 
+export type EditorPreviewMode = 'original' | 'current'
+
 export interface EditorCrop {
   x: number
   y: number
@@ -37,4 +39,21 @@ export interface EditorOperation {
   type: string
   createdAt: string
   payload: Record<string, unknown>
+}
+
+export interface EditedImageExportInput {
+  adjustments: EditorAdjustments
+  crop: EditorCrop | null
+  originalImage: OriginalImage
+}
+
+export interface EditedImageExport {
+  blob: Blob
+  filename: string
+  mimeType: string
+}
+
+export interface EditedImageDownload {
+  filename: string
+  objectUrl: string
 }

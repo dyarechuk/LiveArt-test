@@ -21,18 +21,6 @@
         Choose image
       </v-btn>
 
-      <v-alert
-        v-if="editor.uploadError"
-        class="upload-empty-state__alert"
-        closable
-        density="comfortable"
-        type="error"
-        variant="tonal"
-        @click:close="editor.clearUploadError"
-      >
-        {{ editor.uploadError }}
-      </v-alert>
-
       <input
         ref="fileInput"
         accept="image/*"
@@ -124,11 +112,6 @@ async function handleInputChange(event: Event) {
 
 .upload-empty-state__input {
   display: none;
-}
-
-.upload-empty-state__alert {
-  width: min(100%, 420px);
-  text-align: left;
 }
 
 @media (max-width: 640px) {

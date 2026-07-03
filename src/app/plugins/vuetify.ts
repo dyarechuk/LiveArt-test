@@ -3,35 +3,37 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import { aliases, mdi } from 'vuetify/iconsets/mdi'
 import {
-  VAlert,
   VApp,
   VAppBar,
   VAvatar,
   VBtn,
+  VBtnToggle,
   VDivider,
   VIcon,
   VLayout,
   VList,
   VListItem,
   VMain,
-  VSlider
+  VSlider,
+  VSnackbar
 } from 'vuetify/components'
 import { Ripple } from 'vuetify/directives'
 
 export const vuetify = createVuetify({
   components: {
-    VAlert,
     VApp,
     VAppBar,
     VAvatar,
     VBtn,
+    VBtnToggle,
     VDivider,
     VIcon,
     VLayout,
     VList,
     VListItem,
     VMain,
-    VSlider
+    VSlider,
+    VSnackbar
   },
   directives: {
     Ripple

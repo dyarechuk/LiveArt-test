@@ -23,19 +23,6 @@
       </div>
     </div>
 
-    <v-divider />
-
-    <v-alert
-      v-if="editor.uploadError"
-      closable
-      density="comfortable"
-      type="error"
-      variant="tonal"
-      @click:close="editor.clearUploadError"
-    >
-      {{ editor.uploadError }}
-    </v-alert>
-
     <section class="editing-panel__section">
       <h3>Source</h3>
       <dl class="editing-panel__source">
@@ -104,6 +91,26 @@
           Reset all
         </v-btn>
         <v-btn
+          :disabled="!editor.hasImage || editor.isCropMode"
+          :loading="editor.isExporting"
+          block
+          color="success"
+          prepend-icon="mdi-download"
+          @click="editor.exportImage"
+        >
+          Export image
+        </v-btn>
+        <v-btn
+          v-if="editor.exportDownload"
+          block
+          :download="editor.exportDownload.filename"
+          :href="editor.exportDownload.objectUrl"
+          prepend-icon="mdi-download-circle-outline"
+          variant="tonal"
+        >
+          Download again
+        </v-btn>
+        <v-btn
           :disabled="!editor.hasImage"
           block
           color="error"
@@ -121,6 +128,12 @@
           @change="handleInputChange"
         />
       </div>
+    </section>
+
+    <v-divider />
+
+    <section class="editing-panel__section">
+      <PreviewModeSwitcher />
     </section>
 
     <v-divider />
@@ -147,6 +160,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import AdjustmentPanel from '@/features/editor/components/AdjustmentPanel.vue'
+import PreviewModeSwitcher from '@/features/editor/components/PreviewModeSwitcher.vue'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 import { formatFileSize } from '@/features/editor/utils/formatFileSize'
 
