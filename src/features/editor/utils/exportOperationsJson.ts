@@ -4,6 +4,7 @@ import type {
   EditedImageDownload,
   EditedImageExportInput
 } from '@/features/editor/types/editor'
+import { triggerFileDownload } from '@/features/editor/utils/downloadFile'
 
 export function buildOperationsExport(input: EditedImageExportInput): EditorOperationsExport {
   return {
@@ -28,14 +29,7 @@ export function createOperationsJsonDownload(input: EditedImageExportInput): Edi
 }
 
 export function triggerOperationsJsonDownload(download: EditedImageDownload) {
-  const link = document.createElement('a')
-
-  link.href = download.objectUrl
-  link.download = download.filename
-  link.style.display = 'none'
-  document.body.append(link)
-  link.click()
-  link.remove()
+  triggerFileDownload(download)
 }
 
 function buildSource(input: EditedImageExportInput): EditorOperationsExportSource {

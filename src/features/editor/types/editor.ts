@@ -22,6 +22,13 @@ export type EditorFilterName = 'none' | 'greyscale' | 'sepia'
 
 export type EditorPreviewMode = 'original' | 'current'
 
+export type EditorNoticeType = 'info' | 'warning' | 'success'
+
+export interface EditorNotice {
+  message: string
+  type: EditorNoticeType
+}
+
 export interface EditorCrop {
   x: number
   y: number

@@ -14,13 +14,13 @@
       rounded="lg"
       @update:model-value="setFilter"
     >
-      <v-btn :disabled="!editor.hasImage" value="none">
+      <v-btn :disabled="controlsDisabled" value="none">
         None
       </v-btn>
-      <v-btn :disabled="!editor.hasImage" value="greyscale">
+      <v-btn :disabled="controlsDisabled" value="greyscale">
         Greyscale
       </v-btn>
-      <v-btn :disabled="!editor.hasImage" value="sepia">
+      <v-btn :disabled="controlsDisabled" value="sepia">
         Sepia
       </v-btn>
     </v-btn-toggle>
@@ -33,6 +33,7 @@ import type { EditorFilterName } from '@/features/editor/types/editor'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 
 const editor = useEditorStore()
+const controlsDisabled = computed(() => !editor.hasImage || editor.isBusy || editor.isCropMode)
 const filterLabels: Record<EditorFilterName, string> = {
   none: 'No filter',
   greyscale: 'Greyscale',

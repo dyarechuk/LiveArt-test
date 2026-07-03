@@ -5,6 +5,7 @@ import type {
   EditorAdjustments,
   EditorCrop,
   EditorFilterName,
+  EditorNotice,
   EditorPreviewMode,
   EditedImageDownload,
   EditorOperation,
@@ -31,6 +32,9 @@ const defaultAdjustments: EditorAdjustments = {
   saturation: 100
 }
 
+const largeImagePixelThreshold = 32_000_000
+const largeImageSizeThreshold = 25 * 1024 * 1024
+
 export const useEditorStore = defineStore('editor', () => {
   let imageLoadRequestId = 0
   const originalImage = ref<OriginalImage | null>(null)
@@ -43,6 +47,7 @@ export const useEditorStore = defineStore('editor', () => {
   const uploadError = ref<string | null>(null)
   const exportError = ref<string | null>(null)
   const exportMessage = ref<string | null>(null)
+  const editorNotice = ref<EditorNotice | null>(null)
   const exportDownload = ref<EditedImageDownload | null>(null)
   const operationsDownload = ref<EditedImageDownload | null>(null)
   const isLoadingImage = ref(false)
@@ -50,6 +55,7 @@ export const useEditorStore = defineStore('editor', () => {
   const isExportingOperations = ref(false)
 
   const hasImage = computed(() => originalImage.value !== null)
+  const isBusy = computed(() => isLoadingImage.value || isExporting.value || isExportingOperations.value)
   const previewFilter = computed(() => buildAdjustmentFilter(adjustments.value, filter.value))
   const displayCrop = computed(() => (previewMode.value === 'current' ? crop.value : null))
   const displayFilter = computed(() => (previewMode.value === 'current' ? previewFilter.value : 'none'))
@@ -107,12 +113,13 @@ export const useEditorStore = defineStore('editor', () => {
     uploadError.value = null
     exportError.value = null
     exportMessage.value = null
+    editorNotice.value = null
     clearExportDownload()
     clearOperationsDownload()
 
     if (!isSupportedImageFile(file)) {
       isLoadingImage.value = false
-      uploadError.value = 'Please choose a valid image file.'
+      uploadError.value = 'Please choose a valid image file such as PNG, JPEG or WebP.'
       return
     }
 
@@ -129,7 +136,7 @@ export const useEditorStore = defineStore('editor', () => {
 
       revokeOriginalObjectUrl()
 
-      originalImage.value = {
+      const nextImage: OriginalImage = {
         id: crypto.randomUUID(),
         file,
         name: file.name,
@@ -140,7 +147,9 @@ export const useEditorStore = defineStore('editor', () => {
         naturalHeight: dimensions.naturalHeight,
         createdAt: new Date().toISOString()
       }
+      originalImage.value = nextImage
       resetEdits()
+      editorNotice.value = buildImageLoadNotice(nextImage)
     } catch (error) {
       URL.revokeObjectURL(objectUrl)
       if (requestId === imageLoadRequestId) {
@@ -155,30 +164,37 @@ export const useEditorStore = defineStore('editor', () => {
 
   function resetEdits() {
     selection.value = null
-    resetCrop()
-    resetAllAdjustments()
-    resetFilter()
+    crop.value = null
+    isCropMode.value = false
+    adjustments.value = { ...defaultAdjustments }
+    filter.value = 'none'
     previewMode.value = 'current'
+    clearGeneratedDownloads()
   }
 
   function setAdjustment(key: EditorAdjustmentKey, value: number) {
     adjustments.value[key] = clampAdjustmentValue(value)
+    clearGeneratedDownloads()
   }
 
   function resetAdjustment(key: EditorAdjustmentKey) {
     adjustments.value[key] = defaultAdjustments[key]
+    clearGeneratedDownloads()
   }
 
   function resetAllAdjustments() {
     adjustments.value = { ...defaultAdjustments }
+    clearGeneratedDownloads()
   }
 
   function setFilter(nextFilter: EditorFilterName) {
     filter.value = nextFilter
+    clearGeneratedDownloads()
   }
 
   function resetFilter() {
     filter.value = 'none'
+    clearGeneratedDownloads()
   }
 
   function openCropMode() {
@@ -204,11 +220,13 @@ export const useEditorStore = defineStore('editor', () => {
       height: Math.round(nextCrop.height)
     }
     isCropMode.value = false
+    clearGeneratedDownloads()
   }
 
   function resetCrop() {
     crop.value = null
     isCropMode.value = false
+    clearGeneratedDownloads()
   }
 
   function removeImage() {
@@ -218,6 +236,7 @@ export const useEditorStore = defineStore('editor', () => {
     uploadError.value = null
     exportError.value = null
     exportMessage.value = null
+    editorNotice.value = null
     clearExportDownload()
     clearOperationsDownload()
     resetEdits()
@@ -235,6 +254,10 @@ export const useEditorStore = defineStore('editor', () => {
     exportMessage.value = null
   }
 
+  function clearEditorNotice() {
+    editorNotice.value = null
+  }
+
   function clearExportDownload() {
     revokeEditedImageDownload(exportDownload.value)
     exportDownload.value = null
@@ -245,6 +268,12 @@ export const useEditorStore = defineStore('editor', () => {
     operationsDownload.value = null
   }
 
+  function clearGeneratedDownloads() {
+    exportMessage.value = null
+    clearExportDownload()
+    clearOperationsDownload()
+  }
+
   async function exportImage() {
     if (!originalImage.value) {
       exportError.value = 'Upload an image before exporting.'
@@ -253,6 +282,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     exportError.value = null
     exportMessage.value = null
+    editorNotice.value = null
     isExporting.value = true
 
     try {
@@ -281,6 +311,7 @@ export const useEditorStore = defineStore('editor', () => {
 
     exportError.value = null
     exportMessage.value = null
+    editorNotice.value = null
     isExportingOperations.value = true
 
     try {
@@ -310,6 +341,24 @@ export const useEditorStore = defineStore('editor', () => {
     return Math.min(200, Math.max(0, Math.round(value)))
   }
 
+  function buildImageLoadNotice(image: OriginalImage): EditorNotice {
+    const isLargeImage =
+      image.naturalWidth * image.naturalHeight >= largeImagePixelThreshold ||
+      image.size >= largeImageSizeThreshold
+
+    if (isLargeImage) {
+      return {
+        message: 'Large image loaded. Preview remains live, but crop and export may take a little longer.',
+        type: 'warning'
+      }
+    }
+
+    return {
+      message: `Image loaded: ${image.name}`,
+      type: 'success'
+    }
+  }
+
   return {
     originalImage,
     operations,
@@ -322,12 +371,14 @@ export const useEditorStore = defineStore('editor', () => {
     uploadError,
     exportError,
     exportMessage,
+    editorNotice,
     exportDownload,
     operationsDownload,
     isLoadingImage,
     isExporting,
     isExportingOperations,
     hasImage,
+    isBusy,
     previewFilter,
     displayCrop,
     displayFilter,
@@ -348,6 +399,7 @@ export const useEditorStore = defineStore('editor', () => {
     clearUploadError,
     clearExportError,
     clearExportMessage,
+    clearEditorNotice,
     clearExportDownload,
     clearOperationsDownload,
     exportImage,

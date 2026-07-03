@@ -1,5 +1,18 @@
 <template>
-  <section class="crop-editor">
+  <section
+    class="crop-editor"
+    tabindex="0"
+    @keydown.enter.prevent="applyCrop"
+    @keydown.esc.prevent="emit('cancel')"
+  >
+    <div class="crop-editor__header">
+      <div>
+        <h2>Crop image</h2>
+        <p>Adjust the frame, then apply or cancel to return to the editor.</p>
+      </div>
+      <v-btn icon="mdi-close" variant="text" aria-label="Cancel crop" @click="emit('cancel')" />
+    </div>
+
     <div class="crop-editor__canvas">
       <img ref="imageElement" :alt="image.name" class="crop-editor__image" :src="image.objectUrl" />
     </div>
@@ -95,8 +108,36 @@ function applyCrop() {
 <style scoped>
 .crop-editor {
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 16px;
+}
+
+.crop-editor:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 3px;
+}
+
+.crop-editor__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.crop-editor__header h2,
+.crop-editor__header p {
+  margin: 0;
+}
+
+.crop-editor__header h2 {
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.crop-editor__header p {
+  margin-top: 4px;
+  color: rgb(var(--v-theme-on-background), 0.62);
+  font-size: 0.9rem;
 }
 
 .crop-editor__canvas {

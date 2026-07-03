@@ -1,6 +1,10 @@
 <template>
   <div class="image-preview">
-    <div class="image-preview__frame" :style="previewStyle">
+    <div
+      class="image-preview__frame"
+      :class="{ 'image-preview__frame--cropped': crop }"
+      :style="previewStyle"
+    >
       <img
         :alt="image.name"
         class="image-preview__image"
@@ -27,9 +31,12 @@ const previewStyle = computed(() => {
     return {}
   }
 
+  const cropAspectRatio = props.crop.width / props.crop.height
+
   return {
     aspectRatio: `${props.crop.width} / ${props.crop.height}`,
-    width: `min(100%, ${props.crop.width}px)`
+    '--crop-aspect-ratio': `${cropAspectRatio}`,
+    '--crop-natural-width': `${props.crop.width}px`
   }
 })
 
@@ -78,11 +85,17 @@ const imageStyle = computed(() => {
 .image-preview__frame {
   position: relative;
   display: grid;
+  width: fit-content;
   max-width: min(100%, 1200px);
   max-height: min(72vh, 760px);
   overflow: hidden;
   place-items: center;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+.image-preview__frame--cropped {
+  width: min(100%, var(--crop-natural-width), calc(min(72vh, 760px) * var(--crop-aspect-ratio)));
+  max-height: none;
 }
 
 .image-preview__image {
@@ -109,6 +122,11 @@ const imageStyle = computed(() => {
 
   .image-preview__frame {
     max-height: 58vh;
+  }
+
+  .image-preview__frame--cropped {
+    width: min(100%, var(--crop-natural-width), calc(58vh * var(--crop-aspect-ratio)));
+    max-height: none;
   }
 }
 </style>

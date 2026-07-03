@@ -28,7 +28,7 @@
       <dl class="editing-panel__source">
         <div>
           <dt>Status</dt>
-          <dd>{{ editor.hasImage ? 'Image loaded' : 'Waiting for upload' }}</dd>
+          <dd>{{ sourceStatus }}</dd>
         </div>
         <div v-if="editor.originalImage">
           <dt>File</dt>
@@ -58,13 +58,14 @@
           :loading="editor.isLoadingImage"
           block
           color="primary"
+          :disabled="editor.isExporting || editor.isExportingOperations"
           prepend-icon="mdi-image-plus"
           @click="fileInput?.click()"
         >
           {{ editor.hasImage ? 'Replace image' : 'Choose image' }}
         </v-btn>
         <v-btn
-          :disabled="!editor.hasImage"
+          :disabled="!editor.hasImage || editor.isBusy"
           block
           prepend-icon="mdi-crop"
           variant="tonal"
@@ -73,7 +74,7 @@
           {{ editor.crop ? 'Edit crop' : 'Crop image' }}
         </v-btn>
         <v-btn
-          :disabled="!editor.crop"
+          :disabled="!editor.crop || editor.isBusy"
           block
           prepend-icon="mdi-crop-free"
           variant="tonal"
@@ -82,7 +83,7 @@
           Reset crop
         </v-btn>
         <v-btn
-          :disabled="!editor.hasImage"
+          :disabled="!editor.hasImage || editor.isBusy"
           block
           prepend-icon="mdi-refresh"
           variant="tonal"
@@ -91,7 +92,7 @@
           Reset all
         </v-btn>
         <v-btn
-          :disabled="!editor.hasImage || editor.isCropMode"
+          :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExportingOperations"
           :loading="editor.isExporting"
           block
           color="success"
@@ -111,7 +112,7 @@
           Download again
         </v-btn>
         <v-btn
-          :disabled="!editor.hasImage"
+          :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExporting"
           :loading="editor.isExportingOperations"
           block
           prepend-icon="mdi-code-json"
@@ -131,7 +132,7 @@
           Download JSON again
         </v-btn>
         <v-btn
-          :disabled="!editor.hasImage"
+          :disabled="!editor.hasImage || editor.isBusy"
           block
           color="error"
           prepend-icon="mdi-delete-outline"
@@ -185,7 +186,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import AdjustmentPanel from '@/features/editor/components/AdjustmentPanel.vue'
 import FilterPanel from '@/features/editor/components/FilterPanel.vue'
 import PreviewModeSwitcher from '@/features/editor/components/PreviewModeSwitcher.vue'
@@ -194,6 +195,22 @@ import { formatFileSize } from '@/features/editor/utils/formatFileSize'
 
 const editor = useEditorStore()
 const fileInput = ref<HTMLInputElement>()
+
+const sourceStatus = computed(() => {
+  if (editor.isLoadingImage) {
+    return 'Preparing image'
+  }
+
+  if (editor.isCropMode) {
+    return 'Crop mode active'
+  }
+
+  if (editor.hasImage) {
+    return editor.hasEdits ? 'Image loaded with edits' : 'Image loaded'
+  }
+
+  return 'Waiting for upload'
+})
 
 async function handleInputChange(event: Event) {
   const input = event.target as HTMLInputElement

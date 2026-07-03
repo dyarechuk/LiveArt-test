@@ -1,25 +1,40 @@
 <template>
   <section
     class="upload-empty-state"
+    :aria-busy="editor.isLoadingImage"
     :class="{ 'upload-empty-state--dragging': isDragging }"
+    role="button"
+    tabindex="0"
     @dragenter.prevent="isDragging = true"
     @dragover.prevent="isDragging = true"
     @dragleave.prevent="isDragging = false"
     @drop.prevent="handleDrop"
+    @click="fileInput?.click()"
+    @keydown.enter.prevent="fileInput?.click()"
+    @keydown.space.prevent="fileInput?.click()"
   >
     <div class="upload-empty-state__content">
       <v-avatar color="surface-light" size="72">
-        <v-icon color="primary" icon="mdi-tray-arrow-up" size="34" />
+        <v-icon color="primary" :icon="editor.isLoadingImage ? 'mdi-loading' : 'mdi-tray-arrow-up'" size="34" />
       </v-avatar>
 
       <div class="upload-empty-state__copy">
-        <h2>Upload an image to begin</h2>
-        <p>Start from a local file. The original remains untouched while edits are prepared separately.</p>
+        <h2>{{ editor.isLoadingImage ? 'Preparing image' : 'Upload an image to begin' }}</h2>
+        <p>{{ editor.isLoadingImage ? 'Reading dimensions and preparing a non-destructive preview.' : 'Drop a PNG, JPEG or WebP file here. The original stays untouched while edits are stored as operations.' }}</p>
       </div>
 
-      <v-btn color="primary" prepend-icon="mdi-image-plus" size="large" @click="fileInput?.click()">
+      <v-btn
+        color="primary"
+        :disabled="editor.isLoadingImage"
+        :loading="editor.isLoadingImage"
+        prepend-icon="mdi-image-plus"
+        size="large"
+        @click.stop="fileInput?.click()"
+      >
         Choose image
       </v-btn>
+
+      <p class="upload-empty-state__hint">Image files only. Large images are supported, but export may take longer.</p>
 
       <input
         ref="fileInput"
@@ -76,6 +91,11 @@ async function handleInputChange(event: Event) {
     transform 160ms ease;
 }
 
+.upload-empty-state:focus-visible {
+  outline: 2px solid rgb(var(--v-theme-primary));
+  outline-offset: 3px;
+}
+
 .upload-empty-state--dragging {
   border-color: rgb(var(--v-theme-primary));
   transform: scale(0.998);
@@ -112,6 +132,13 @@ async function handleInputChange(event: Event) {
 
 .upload-empty-state__input {
   display: none;
+}
+
+.upload-empty-state__hint {
+  margin: 0;
+  color: rgb(var(--v-theme-on-surface), 0.52);
+  font-size: 0.82rem;
+  line-height: 1.45;
 }
 
 @media (max-width: 640px) {

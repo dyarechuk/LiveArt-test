@@ -21,6 +21,27 @@
   </v-snackbar>
 
   <v-snackbar
+    v-model="showEditorNotice"
+    class="app-toast-host"
+    :color="editor.editorNotice?.type"
+    location="top right"
+    max-width="380"
+    min-width="280"
+    multi-line
+    timeout="4200"
+    variant="flat"
+  >
+    <div class="app-toast-host__content">
+      <v-icon :icon="noticeIcon" size="20" />
+      <span>{{ editor.editorNotice?.message }}</span>
+    </div>
+
+    <template #actions>
+      <v-btn icon="mdi-close" variant="text" @click="editor.clearEditorNotice" />
+    </template>
+  </v-snackbar>
+
+  <v-snackbar
     v-model="showExportError"
     class="app-toast-host"
     color="error"
@@ -94,6 +115,27 @@ const showExportMessage = computed({
       editor.clearExportMessage()
     }
   }
+})
+
+const showEditorNotice = computed({
+  get: () => Boolean(editor.editorNotice),
+  set: (value) => {
+    if (!value) {
+      editor.clearEditorNotice()
+    }
+  }
+})
+
+const noticeIcon = computed(() => {
+  if (editor.editorNotice?.type === 'warning') {
+    return 'mdi-alert'
+  }
+
+  if (editor.editorNotice?.type === 'success') {
+    return 'mdi-check-circle'
+  }
+
+  return 'mdi-information'
 })
 </script>
 

@@ -14,10 +14,10 @@
       rounded="lg"
       @update:model-value="setPreviewMode"
     >
-      <v-btn :disabled="!editor.hasImage || editor.isCropMode" value="original">
+      <v-btn :disabled="controlsDisabled" value="original">
         Original
       </v-btn>
-      <v-btn :disabled="!editor.hasImage || editor.isCropMode" value="current">
+      <v-btn :disabled="controlsDisabled" value="current">
         Current
       </v-btn>
     </v-btn-toggle>
@@ -25,10 +25,12 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { EditorPreviewMode } from '@/features/editor/types/editor'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 
 const editor = useEditorStore()
+const controlsDisabled = computed(() => !editor.hasImage || editor.isCropMode || editor.isLoadingImage)
 
 function setPreviewMode(mode: EditorPreviewMode | undefined) {
   if (mode) {

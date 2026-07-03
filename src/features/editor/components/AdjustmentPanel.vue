@@ -3,7 +3,7 @@
     <div class="adjustment-panel__header">
       <h3>Adjustments</h3>
       <v-btn
-        :disabled="!editor.hasImage"
+        :disabled="controlsDisabled"
         prepend-icon="mdi-refresh"
         size="small"
         variant="tonal"
@@ -17,24 +17,25 @@
       <div v-for="control in controls" :key="control.key" class="adjustment-panel__control">
         <div class="adjustment-panel__label">
           <span>{{ control.label }}</span>
-          <span>{{ editor.adjustments[control.key] }}%</span>
+          <span class="adjustment-panel__value">{{ editor.adjustments[control.key] }}%</span>
         </div>
         <div class="adjustment-panel__row">
           <v-slider
             color="primary"
             density="comfortable"
-            :disabled="!editor.hasImage"
+            :disabled="controlsDisabled"
             hide-details
             max="200"
             min="0"
             :model-value="editor.adjustments[control.key]"
             step="1"
             track-color="surface-light"
+            :aria-label="control.label"
             @update:model-value="setAdjustment(control.key, $event)"
           />
           <v-btn
             :aria-label="`Reset ${control.label.toLowerCase()}`"
-            :disabled="!editor.hasImage"
+            :disabled="controlsDisabled"
             icon="mdi-restore"
             size="small"
             variant="text"
@@ -47,6 +48,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import type { EditorAdjustmentKey } from '@/features/editor/types/editor'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 
@@ -56,6 +58,7 @@ interface AdjustmentControl {
 }
 
 const editor = useEditorStore()
+const controlsDisabled = computed(() => !editor.hasImage || editor.isBusy || editor.isCropMode)
 const controls: AdjustmentControl[] = [
   {
     key: 'brightness',
@@ -112,8 +115,16 @@ function setAdjustment(key: EditorAdjustmentKey, value: number | string) {
 
 .adjustment-panel__label {
   justify-content: space-between;
+  gap: 12px;
   color: rgb(var(--v-theme-on-surface), 0.76);
   font-size: 0.86rem;
+}
+
+.adjustment-panel__value {
+  min-width: 44px;
+  color: rgb(var(--v-theme-on-surface), 0.88);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
 .adjustment-panel__row {

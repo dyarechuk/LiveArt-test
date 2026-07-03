@@ -4,6 +4,7 @@ import type {
   EditedImageExportInput
 } from '@/features/editor/types/editor'
 import { buildAdjustmentFilter } from '@/features/editor/utils/buildAdjustmentFilter'
+import { triggerFileDownload } from '@/features/editor/utils/downloadFile'
 
 const supportedExportMimeTypes = new Set(['image/png', 'image/jpeg', 'image/webp'])
 
@@ -51,14 +52,7 @@ export function createEditedImageDownload(exportedImage: EditedImageExport): Edi
 }
 
 export function triggerEditedImageDownload(download: EditedImageDownload) {
-  const link = document.createElement('a')
-
-  link.href = download.objectUrl
-  link.download = download.filename
-  link.style.display = 'none'
-  document.body.append(link)
-  link.click()
-  link.remove()
+  triggerFileDownload(download)
 }
 
 export function revokeEditedImageDownload(download: EditedImageDownload | null) {
