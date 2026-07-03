@@ -31,7 +31,7 @@ const theme = useTheme()
 const isDark = computed(() => theme.global.current.value.dark)
 
 function toggleTheme() {
-  theme.global.name.value = isDark.value ? 'lightNeutral' : 'darkNeutral'
+  theme.change(isDark.value ? 'lightNeutral' : 'darkNeutral')
 }
 </script>
 
