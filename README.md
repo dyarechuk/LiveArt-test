@@ -1,5 +1,7 @@
 # Vue Image Editor
 
+[DEMO LINK](https://live-art-test.vercel.app/)
+
 A browser-based image editor test task built with a clean Vue 3 architecture, non-destructive editing state, live preview, crop support, image export, and operations JSON export.
 
 ## Stack
