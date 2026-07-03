@@ -18,6 +18,8 @@ export interface EditorAdjustments {
 
 export type EditorAdjustmentKey = keyof EditorAdjustments
 
+export type EditorFilterName = 'none' | 'greyscale' | 'sepia'
+
 export type EditorPreviewMode = 'original' | 'current'
 
 export interface EditorCrop {
@@ -44,6 +46,7 @@ export interface EditorOperation {
 export interface EditedImageExportInput {
   adjustments: EditorAdjustments
   crop: EditorCrop | null
+  filter: EditorFilterName
   originalImage: OriginalImage
 }
 
@@ -56,4 +59,40 @@ export interface EditedImageExport {
 export interface EditedImageDownload {
   filename: string
   objectUrl: string
+}
+
+export interface EditorOperationsExportSource {
+  fileName: string
+  mimeType: string
+  width: number
+  height: number
+}
+
+export interface CropOperationExport {
+  type: 'crop'
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
+export interface AdjustmentOperationExport extends EditorAdjustments {
+  type: 'adjust'
+}
+
+export interface FilterOperationExport {
+  type: 'filter'
+  name: Exclude<EditorFilterName, 'none'>
+}
+
+export type EditorOperationExport =
+  | CropOperationExport
+  | AdjustmentOperationExport
+  | FilterOperationExport
+
+export interface EditorOperationsExport {
+  schemaVersion: 1
+  source: EditorOperationsExportSource
+  operations: EditorOperationExport[]
+  exportedAt: string
 }

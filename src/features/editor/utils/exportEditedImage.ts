@@ -3,6 +3,7 @@ import type {
   EditedImageExport,
   EditedImageExportInput
 } from '@/features/editor/types/editor'
+import { buildAdjustmentFilter } from '@/features/editor/utils/buildAdjustmentFilter'
 
 const supportedExportMimeTypes = new Set(['image/png', 'image/jpeg', 'image/webp'])
 
@@ -18,7 +19,7 @@ export async function exportEditedImage(input: EditedImageExportInput): Promise<
 
   canvas.width = Math.max(1, Math.round(crop.width))
   canvas.height = Math.max(1, Math.round(crop.height))
-  context.filter = buildCanvasFilter(input.adjustments)
+  context.filter = buildAdjustmentFilter(input.adjustments, input.filter)
   context.drawImage(
     image,
     crop.x,
@@ -93,14 +94,6 @@ function canvasToBlob(canvas: HTMLCanvasElement, mimeType: string) {
       resolve(blob)
     }, mimeType)
   })
-}
-
-function buildCanvasFilter(adjustments: EditedImageExportInput['adjustments']) {
-  return [
-    `brightness(${adjustments.brightness}%)`,
-    `contrast(${adjustments.contrast}%)`,
-    `saturate(${adjustments.saturation}%)`
-  ].join(' ')
 }
 
 function normalizeCrop(input: EditedImageExportInput) {

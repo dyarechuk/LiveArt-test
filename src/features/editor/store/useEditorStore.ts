@@ -4,6 +4,7 @@ import type {
   EditorAdjustmentKey,
   EditorAdjustments,
   EditorCrop,
+  EditorFilterName,
   EditorPreviewMode,
   EditedImageDownload,
   EditorOperation,
@@ -17,6 +18,10 @@ import {
   revokeEditedImageDownload,
   triggerEditedImageDownload
 } from '@/features/editor/utils/exportEditedImage'
+import {
+  createOperationsJsonDownload,
+  triggerOperationsJsonDownload
+} from '@/features/editor/utils/exportOperationsJson'
 import { isSupportedImageFile } from '@/features/editor/utils/isSupportedImageFile'
 import { readImageDimensions } from '@/features/editor/utils/readImageDimensions'
 
@@ -31,6 +36,7 @@ export const useEditorStore = defineStore('editor', () => {
   const originalImage = ref<OriginalImage | null>(null)
   const selection = ref<EditorSelection | null>(null)
   const adjustments = ref<EditorAdjustments>({ ...defaultAdjustments })
+  const filter = ref<EditorFilterName>('none')
   const crop = ref<EditorCrop | null>(null)
   const previewMode = ref<EditorPreviewMode>('current')
   const isCropMode = ref(false)
@@ -38,11 +44,13 @@ export const useEditorStore = defineStore('editor', () => {
   const exportError = ref<string | null>(null)
   const exportMessage = ref<string | null>(null)
   const exportDownload = ref<EditedImageDownload | null>(null)
+  const operationsDownload = ref<EditedImageDownload | null>(null)
   const isLoadingImage = ref(false)
   const isExporting = ref(false)
+  const isExportingOperations = ref(false)
 
   const hasImage = computed(() => originalImage.value !== null)
-  const previewFilter = computed(() => buildAdjustmentFilter(adjustments.value))
+  const previewFilter = computed(() => buildAdjustmentFilter(adjustments.value, filter.value))
   const displayCrop = computed(() => (previewMode.value === 'current' ? crop.value : null))
   const displayFilter = computed(() => (previewMode.value === 'current' ? previewFilter.value : 'none'))
   const operations = computed<EditorOperation[]>(() => {
@@ -70,6 +78,17 @@ export const useEditorStore = defineStore('editor', () => {
       })
     }
 
+    if (filter.value !== 'none') {
+      editorOperations.push({
+        id: 'filter',
+        type: 'filter',
+        createdAt: originalImage.value?.createdAt ?? '',
+        payload: {
+          name: filter.value
+        }
+      })
+    }
+
     return editorOperations
   })
   const hasEdits = computed(() => {
@@ -78,7 +97,8 @@ export const useEditorStore = defineStore('editor', () => {
       selection.value !== null ||
       adjustments.value.brightness !== defaultAdjustments.brightness ||
       adjustments.value.contrast !== defaultAdjustments.contrast ||
-      adjustments.value.saturation !== defaultAdjustments.saturation
+      adjustments.value.saturation !== defaultAdjustments.saturation ||
+      filter.value !== 'none'
     )
   })
 
@@ -88,6 +108,7 @@ export const useEditorStore = defineStore('editor', () => {
     exportError.value = null
     exportMessage.value = null
     clearExportDownload()
+    clearOperationsDownload()
 
     if (!isSupportedImageFile(file)) {
       isLoadingImage.value = false
@@ -136,6 +157,7 @@ export const useEditorStore = defineStore('editor', () => {
     selection.value = null
     resetCrop()
     resetAllAdjustments()
+    resetFilter()
     previewMode.value = 'current'
   }
 
@@ -149,6 +171,14 @@ export const useEditorStore = defineStore('editor', () => {
 
   function resetAllAdjustments() {
     adjustments.value = { ...defaultAdjustments }
+  }
+
+  function setFilter(nextFilter: EditorFilterName) {
+    filter.value = nextFilter
+  }
+
+  function resetFilter() {
+    filter.value = 'none'
   }
 
   function openCropMode() {
@@ -189,6 +219,7 @@ export const useEditorStore = defineStore('editor', () => {
     exportError.value = null
     exportMessage.value = null
     clearExportDownload()
+    clearOperationsDownload()
     resetEdits()
   }
 
@@ -209,6 +240,11 @@ export const useEditorStore = defineStore('editor', () => {
     exportDownload.value = null
   }
 
+  function clearOperationsDownload() {
+    revokeEditedImageDownload(operationsDownload.value)
+    operationsDownload.value = null
+  }
+
   async function exportImage() {
     if (!originalImage.value) {
       exportError.value = 'Upload an image before exporting.'
@@ -223,6 +259,7 @@ export const useEditorStore = defineStore('editor', () => {
       const exportedImage = await exportEditedImage({
         adjustments: adjustments.value,
         crop: crop.value,
+        filter: filter.value,
         originalImage: originalImage.value
       })
       clearExportDownload()
@@ -233,6 +270,33 @@ export const useEditorStore = defineStore('editor', () => {
       exportError.value = error instanceof Error ? error.message : 'The edited image could not be exported.'
     } finally {
       isExporting.value = false
+    }
+  }
+
+  async function exportOperationsJson() {
+    if (!originalImage.value) {
+      exportError.value = 'Upload an image before exporting operations.'
+      return
+    }
+
+    exportError.value = null
+    exportMessage.value = null
+    isExportingOperations.value = true
+
+    try {
+      clearOperationsDownload()
+      operationsDownload.value = createOperationsJsonDownload({
+        adjustments: adjustments.value,
+        crop: crop.value,
+        filter: filter.value,
+        originalImage: originalImage.value
+      })
+      triggerOperationsJsonDownload(operationsDownload.value)
+      exportMessage.value = `Operations JSON ready: ${operationsDownload.value.filename}`
+    } catch (error) {
+      exportError.value = error instanceof Error ? error.message : 'The operations JSON could not be exported.'
+    } finally {
+      isExportingOperations.value = false
     }
   }
 
@@ -251,6 +315,7 @@ export const useEditorStore = defineStore('editor', () => {
     operations,
     selection,
     adjustments,
+    filter,
     crop,
     previewMode,
     isCropMode,
@@ -258,8 +323,10 @@ export const useEditorStore = defineStore('editor', () => {
     exportError,
     exportMessage,
     exportDownload,
+    operationsDownload,
     isLoadingImage,
     isExporting,
+    isExportingOperations,
     hasImage,
     previewFilter,
     displayCrop,
@@ -270,6 +337,8 @@ export const useEditorStore = defineStore('editor', () => {
     setAdjustment,
     resetAdjustment,
     resetAllAdjustments,
+    setFilter,
+    resetFilter,
     setPreviewMode,
     openCropMode,
     cancelCropMode,
@@ -280,6 +349,8 @@ export const useEditorStore = defineStore('editor', () => {
     clearExportError,
     clearExportMessage,
     clearExportDownload,
-    exportImage
+    clearOperationsDownload,
+    exportImage,
+    exportOperationsJson
   }
 })
