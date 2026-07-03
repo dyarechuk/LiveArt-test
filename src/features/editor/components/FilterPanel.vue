@@ -53,6 +53,7 @@ function setFilter(filter: EditorFilterName | undefined) {
 .filter-panel {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .filter-panel__header {
@@ -77,9 +78,31 @@ function setFilter(filter: EditorFilterName | undefined) {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   width: 100%;
+  min-width: 0;
 }
 
 .filter-panel__toggle :deep(.v-btn) {
   min-width: 0;
+}
+
+.filter-panel__toggle :deep(.v-btn__content) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .filter-panel {
+    gap: 10px;
+  }
+
+  .filter-panel__toggle :deep(.v-btn) {
+    padding-inline: 8px;
+  }
+
+  .filter-panel__toggle :deep(.v-btn__content) {
+    font-size: 0.76rem;
+  }
 }
 </style>

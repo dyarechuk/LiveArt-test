@@ -43,6 +43,7 @@ function setPreviewMode(mode: EditorPreviewMode | undefined) {
 .preview-mode-switcher {
   display: grid;
   gap: 12px;
+  min-width: 0;
 }
 
 .preview-mode-switcher__header {
@@ -67,9 +68,27 @@ function setPreviewMode(mode: EditorPreviewMode | undefined) {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   width: 100%;
+  min-width: 0;
 }
 
 .preview-mode-switcher__toggle :deep(.v-btn) {
   min-width: 0;
+}
+
+.preview-mode-switcher__toggle :deep(.v-btn__content) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .preview-mode-switcher {
+    gap: 10px;
+  }
+
+  .preview-mode-switcher__toggle :deep(.v-btn) {
+    padding-inline: 8px;
+  }
 }
 </style>

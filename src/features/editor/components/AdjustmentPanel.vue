@@ -83,6 +83,7 @@ function setAdjustment(key: EditorAdjustmentKey, value: number | string) {
 .adjustment-panel {
   display: grid;
   gap: 16px;
+  min-width: 0;
 }
 
 .adjustment-panel__header,
@@ -106,11 +107,13 @@ function setAdjustment(key: EditorAdjustmentKey, value: number | string) {
 .adjustment-panel__controls {
   display: grid;
   gap: 18px;
+  min-width: 0;
 }
 
 .adjustment-panel__control {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .adjustment-panel__label {
@@ -129,9 +132,36 @@ function setAdjustment(key: EditorAdjustmentKey, value: number | string) {
 
 .adjustment-panel__row {
   gap: 8px;
+  min-width: 0;
 }
 
 .adjustment-panel__row :deep(.v-slider) {
   min-width: 0;
+}
+
+@media (max-width: 768px) {
+  .adjustment-panel {
+    gap: 12px;
+  }
+
+  .adjustment-panel__header {
+    gap: 8px;
+  }
+
+  .adjustment-panel__controls {
+    gap: 12px;
+  }
+
+  .adjustment-panel__control {
+    gap: 4px;
+  }
+
+  .adjustment-panel__label {
+    font-size: 0.8rem;
+  }
+
+  .adjustment-panel__value {
+    min-width: 40px;
+  }
 }
 </style>

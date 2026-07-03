@@ -78,7 +78,11 @@ async function handleInputChange(event: Event) {
 <style scoped>
 .upload-empty-state {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: calc(100vh - 112px);
+  overflow: hidden;
   place-items: center;
   border: 1px dashed rgba(var(--v-theme-on-surface), 0.22);
   border-radius: 8px;
@@ -106,6 +110,8 @@ async function handleInputChange(event: Event) {
   justify-items: center;
   gap: 24px;
   width: min(100%, 520px);
+  max-width: 100%;
+  min-width: 0;
   padding: 32px;
   text-align: center;
 }
@@ -113,6 +119,7 @@ async function handleInputChange(event: Event) {
 .upload-empty-state__copy {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .upload-empty-state__copy h2 {
@@ -143,11 +150,25 @@ async function handleInputChange(event: Event) {
 
 @media (max-width: 640px) {
   .upload-empty-state {
-    min-height: calc(100vh - 96px);
+    min-height: clamp(300px, 46svh, 420px);
   }
 
   .upload-empty-state__content {
-    padding: 20px;
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .upload-empty-state__copy h2 {
+    font-size: 1.55rem;
+  }
+
+  .upload-empty-state__copy p {
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  .upload-empty-state__hint {
+    font-size: 0.76rem;
   }
 }
 </style>

@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <section class="editing-panel__section">
+    <section class="editing-panel__section editing-panel__section--source">
       <h3>Source</h3>
       <dl class="editing-panel__source">
         <div>
@@ -49,12 +49,13 @@
       </dl>
     </section>
 
-    <v-divider />
+    <v-divider class="editing-panel__divider editing-panel__divider--source" />
 
-    <section class="editing-panel__section">
+    <section class="editing-panel__section editing-panel__section--actions">
       <h3>Actions</h3>
       <div class="editing-panel__actions">
         <v-btn
+          class="editing-panel__action editing-panel__action--upload"
           :loading="editor.isLoadingImage"
           block
           color="primary"
@@ -65,6 +66,7 @@
           {{ editor.hasImage ? 'Replace image' : 'Choose image' }}
         </v-btn>
         <v-btn
+          class="editing-panel__action editing-panel__action--crop"
           :disabled="!editor.hasImage || editor.isBusy"
           block
           prepend-icon="mdi-crop"
@@ -74,24 +76,7 @@
           {{ editor.crop ? 'Edit crop' : 'Crop image' }}
         </v-btn>
         <v-btn
-          :disabled="!editor.crop || editor.isBusy"
-          block
-          prepend-icon="mdi-crop-free"
-          variant="tonal"
-          @click="editor.resetCrop"
-        >
-          Reset crop
-        </v-btn>
-        <v-btn
-          :disabled="!editor.hasImage || editor.isBusy"
-          block
-          prepend-icon="mdi-refresh"
-          variant="tonal"
-          @click="editor.resetEdits"
-        >
-          Reset all
-        </v-btn>
-        <v-btn
+          class="editing-panel__action editing-panel__action--export"
           :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExportingOperations"
           :loading="editor.isExporting"
           block
@@ -102,16 +87,7 @@
           Export image
         </v-btn>
         <v-btn
-          v-if="editor.exportDownload"
-          block
-          :download="editor.exportDownload.filename"
-          :href="editor.exportDownload.objectUrl"
-          prepend-icon="mdi-download-circle-outline"
-          variant="tonal"
-        >
-          Download again
-        </v-btn>
-        <v-btn
+          class="editing-panel__action editing-panel__action--json"
           :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExporting"
           :loading="editor.isExportingOperations"
           block
@@ -122,7 +98,39 @@
           Export operations JSON
         </v-btn>
         <v-btn
+          class="editing-panel__action editing-panel__action--reset-crop"
+          :disabled="!editor.crop || editor.isBusy"
+          block
+          prepend-icon="mdi-crop-free"
+          variant="tonal"
+          @click="editor.resetCrop"
+        >
+          Reset crop
+        </v-btn>
+        <v-btn
+          class="editing-panel__action editing-panel__action--reset"
+          :disabled="!editor.hasImage || editor.isBusy"
+          block
+          prepend-icon="mdi-refresh"
+          variant="tonal"
+          @click="editor.resetEdits"
+        >
+          Reset all
+        </v-btn>
+        <v-btn
+          v-if="editor.exportDownload"
+          class="editing-panel__action editing-panel__action--download"
+          block
+          :download="editor.exportDownload.filename"
+          :href="editor.exportDownload.objectUrl"
+          prepend-icon="mdi-download-circle-outline"
+          variant="tonal"
+        >
+          Download again
+        </v-btn>
+        <v-btn
           v-if="editor.operationsDownload"
+          class="editing-panel__action editing-panel__action--download-json"
           block
           :download="editor.operationsDownload.filename"
           :href="editor.operationsDownload.objectUrl"
@@ -132,6 +140,7 @@
           Download JSON again
         </v-btn>
         <v-btn
+          class="editing-panel__action editing-panel__action--remove"
           :disabled="!editor.hasImage || editor.isBusy"
           block
           color="error"
@@ -151,27 +160,27 @@
       </div>
     </section>
 
-    <v-divider />
+    <v-divider class="editing-panel__divider editing-panel__divider--actions" />
 
-    <section class="editing-panel__section">
+    <section class="editing-panel__section editing-panel__section--preview">
       <PreviewModeSwitcher />
     </section>
 
-    <v-divider />
+    <v-divider class="editing-panel__divider editing-panel__divider--preview" />
 
-    <section class="editing-panel__section">
+    <section class="editing-panel__section editing-panel__section--adjustments">
       <AdjustmentPanel />
     </section>
 
-    <v-divider />
+    <v-divider class="editing-panel__divider editing-panel__divider--adjustments" />
 
-    <section class="editing-panel__section">
+    <section class="editing-panel__section editing-panel__section--filter">
       <FilterPanel />
     </section>
 
-    <v-divider />
+    <v-divider class="editing-panel__divider editing-panel__divider--filter" />
 
-    <section class="editing-panel__section">
+    <section class="editing-panel__section editing-panel__section--state">
       <h3>State model</h3>
       <v-list bg-color="transparent" density="compact" lines="two">
         <v-list-item prepend-icon="mdi-layers-outline" title="Original preserved" subtitle="The uploaded file and source URL are stored separately from edit operations." />
@@ -228,7 +237,10 @@ async function handleInputChange(event: Event) {
 .editing-panel {
   display: flex;
   flex-direction: column;
+  flex: 0 0 380px;
   gap: 20px;
+  width: 100%;
+  max-width: 380px;
   min-width: 0;
   max-height: calc(100vh - 64px);
   overflow-y: auto;
@@ -278,6 +290,11 @@ async function handleInputChange(event: Event) {
 .editing-panel__section {
   display: grid;
   gap: 14px;
+  min-width: 0;
+}
+
+.editing-panel__divider {
+  flex: 0 0 auto;
 }
 
 .editing-panel__source {
@@ -307,6 +324,19 @@ async function handleInputChange(event: Event) {
 .editing-panel__actions {
   display: grid;
   gap: 10px;
+  min-width: 0;
+}
+
+.editing-panel__action {
+  min-width: 0;
+}
+
+.editing-panel__action :deep(.v-btn__content) {
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .editing-panel__input {
@@ -315,9 +345,104 @@ async function handleInputChange(event: Event) {
 
 @media (max-width: 960px) {
   .editing-panel {
+    flex: none;
+    width: 100%;
+    max-width: none;
     max-height: none;
     border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
     border-left: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .editing-panel {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    gap: 12px;
+    max-height: min(68svh, 620px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 12px 10px calc(12px + env(safe-area-inset-bottom));
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 -18px 42px rgba(0, 0, 0, 0.32);
+  }
+
+  .editing-panel__header {
+    display: none;
+  }
+
+  .editing-panel__section {
+    gap: 10px;
+  }
+
+  .editing-panel h3 {
+    font-size: 0.84rem;
+  }
+
+  .editing-panel__section--actions {
+    order: 1;
+  }
+
+  .editing-panel__divider--actions {
+    order: 2;
+  }
+
+  .editing-panel__section--preview {
+    order: 3;
+  }
+
+  .editing-panel__divider--preview {
+    order: 4;
+  }
+
+  .editing-panel__section--adjustments {
+    order: 5;
+  }
+
+  .editing-panel__divider--adjustments {
+    order: 6;
+  }
+
+  .editing-panel__section--filter {
+    order: 7;
+  }
+
+  .editing-panel__divider--filter {
+    order: 8;
+  }
+
+  .editing-panel__section--source {
+    order: 9;
+  }
+
+  .editing-panel__divider--source,
+  .editing-panel__section--state {
+    display: none;
+  }
+
+  .editing-panel__actions {
+    gap: 8px;
+  }
+
+  .editing-panel__action {
+    width: 100%;
+  }
+
+  .editing-panel__source {
+    gap: 8px;
+  }
+
+  .editing-panel__source dt {
+    font-size: 0.74rem;
+  }
+
+  .editing-panel__source dd {
+    overflow: hidden;
+    font-size: 0.84rem;
+    overflow-wrap: normal;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 </style>

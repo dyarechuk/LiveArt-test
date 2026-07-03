@@ -110,6 +110,9 @@ function applyCrop() {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   gap: 16px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .crop-editor:focus-visible {
@@ -122,6 +125,7 @@ function applyCrop() {
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
+  min-width: 0;
 }
 
 .crop-editor__header h2,
@@ -142,6 +146,9 @@ function applyCrop() {
 
 .crop-editor__canvas {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 520px;
   overflow: hidden;
   place-items: center;
@@ -161,11 +168,55 @@ function applyCrop() {
   flex-wrap: wrap;
   gap: 10px;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 @media (max-width: 960px) {
   .crop-editor__canvas {
     min-height: 380px;
+  }
+}
+
+@media (max-width: 768px) {
+  .crop-editor {
+    gap: 10px;
+  }
+
+  .crop-editor__header {
+    gap: 8px;
+  }
+
+  .crop-editor__header h2 {
+    font-size: 1rem;
+  }
+
+  .crop-editor__header p {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  .crop-editor__canvas {
+    height: clamp(280px, 52svh, 430px);
+    min-height: 0;
+  }
+
+  .crop-editor__image {
+    max-height: 100%;
+  }
+
+  .crop-editor__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .crop-editor__actions :deep(.v-btn) {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .crop-editor__actions {
+    grid-template-columns: 1fr;
   }
 }
 </style>

@@ -15,8 +15,8 @@
         :image="editor.originalImage"
       />
       <div v-if="editor.originalImage" class="image-workspace__meta">
-        <span>{{ editor.originalImage.name }}</span>
-        <span>{{ previewDetails }}</span>
+        <span class="image-workspace__filename" :title="editor.originalImage.name">{{ editor.originalImage.name }}</span>
+        <span class="image-workspace__details">{{ previewDetails }}</span>
       </div>
     </div>
 
@@ -54,7 +54,10 @@ const previewDetails = computed(() => {
 <style scoped>
 .image-workspace {
   display: grid;
+  width: 100%;
+  max-width: 100%;
   min-width: 0;
+  overflow: hidden;
   padding: 24px;
 }
 
@@ -62,22 +65,71 @@ const previewDetails = computed(() => {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 16px;
+  width: 100%;
+  max-width: 100%;
   min-height: 0;
+  min-width: 0;
 }
 
 .image-workspace__meta {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 8px 16px;
   justify-content: space-between;
+  min-width: 0;
   color: rgb(var(--v-theme-on-background), 0.72);
   font-size: 0.86rem;
 }
 
+.image-workspace__filename {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.image-workspace__details {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: right;
+}
+
 @media (max-width: 960px) {
   .image-workspace {
-    min-height: calc(100vh - 64px);
     padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .image-workspace {
+    padding: 8px;
+  }
+
+  .image-workspace__stage {
+    gap: 8px;
+  }
+
+  .image-workspace__meta {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.78rem;
+  }
+
+  .image-workspace__filename,
+  .image-workspace__details {
+    width: 100%;
+    max-width: 100%;
+    text-align: left;
+  }
+
+  .image-workspace__details {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 }
 </style>

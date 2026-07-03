@@ -16,8 +16,17 @@ body,
   margin: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
+html {
+  overflow-x: hidden;
+}
+
 body {
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 button,
@@ -31,6 +40,12 @@ select {
   min-height: 100vh;
 }
 
+.v-main {
+  max-width: 100%;
+  min-width: 0;
+}
+
 .app-layout {
   min-height: 100vh;
+  overflow-x: hidden;
 }

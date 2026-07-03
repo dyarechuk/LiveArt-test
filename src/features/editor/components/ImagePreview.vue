@@ -63,6 +63,9 @@ const imageStyle = computed(() => {
 <style scoped>
 .image-preview {
   display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 520px;
   overflow: hidden;
   place-items: center;
@@ -100,6 +103,7 @@ const imageStyle = computed(() => {
 
 .image-preview__image {
   display: block;
+  width: auto;
   max-width: min(100%, 1200px);
   max-height: min(72vh, 760px);
   object-fit: contain;
@@ -127,6 +131,27 @@ const imageStyle = computed(() => {
   .image-preview__frame--cropped {
     width: min(100%, var(--crop-natural-width), calc(58vh * var(--crop-aspect-ratio)));
     max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .image-preview {
+    height: clamp(260px, 52svh, 430px);
+    min-height: 0;
+  }
+
+  .image-preview__frame {
+    max-width: 100%;
+    max-height: 100%;
+  }
+
+  .image-preview__frame--cropped {
+    width: min(100%, var(--crop-natural-width), calc(52svh * var(--crop-aspect-ratio)));
+  }
+
+  .image-preview__image {
+    max-width: 100%;
+    max-height: 100%;
   }
 }
 </style>

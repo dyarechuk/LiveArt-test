@@ -14,7 +14,10 @@ import EditingPanel from '@/features/editor/components/EditingPanel.vue'
 .editor-view {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 380px);
+  width: 100%;
+  max-width: 100%;
   min-height: calc(100vh - 64px);
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 15% 0%, rgba(var(--v-theme-primary), 0.16), transparent 26rem),
     rgb(var(--v-theme-background));
@@ -22,7 +25,8 @@ import EditingPanel from '@/features/editor/components/EditingPanel.vue'
 
 @media (max-width: 960px) {
   .editor-view {
-    grid-template-columns: 1fr;
+    display: flex;
+    flex-direction: column;
     min-height: auto;
   }
 }
