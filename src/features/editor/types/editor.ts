@@ -18,6 +18,13 @@ export interface EditorAdjustments {
 
 export type EditorAdjustmentKey = keyof EditorAdjustments
 
+export interface EditorCrop {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface EditorSelection {
   x: number
   y: number

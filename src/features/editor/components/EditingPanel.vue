@@ -79,6 +79,24 @@
         <v-btn
           :disabled="!editor.hasImage"
           block
+          prepend-icon="mdi-crop"
+          variant="tonal"
+          @click="editor.openCropMode"
+        >
+          {{ editor.crop ? 'Edit crop' : 'Crop image' }}
+        </v-btn>
+        <v-btn
+          :disabled="!editor.crop"
+          block
+          prepend-icon="mdi-crop-free"
+          variant="tonal"
+          @click="editor.resetCrop"
+        >
+          Reset crop
+        </v-btn>
+        <v-btn
+          :disabled="!editor.hasImage"
+          block
           prepend-icon="mdi-refresh"
           variant="tonal"
           @click="editor.resetEdits"
@@ -117,6 +135,7 @@
       <h3>State model</h3>
       <v-list bg-color="transparent" density="compact" lines="two">
         <v-list-item prepend-icon="mdi-layers-outline" title="Original preserved" subtitle="The uploaded file and source URL are stored separately from edit operations." />
+        <v-list-item prepend-icon="mdi-crop" title="Crop" :subtitle="editor.crop ? `${editor.crop.width} x ${editor.crop.height} px` : 'No crop applied'" />
         <v-list-item prepend-icon="mdi-history" title="Edit operations" :subtitle="`${editor.operations.length} queued operations`" />
         <v-list-item prepend-icon="mdi-select-drag" title="Selection" :subtitle="editor.selection ? 'Active selection' : 'No active selection'" />
       </v-list>

@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import type {
   EditorAdjustmentKey,
   EditorAdjustments,
+  EditorCrop,
   EditorOperation,
   EditorSelection,
   OriginalImage
@@ -20,17 +21,32 @@ const defaultAdjustments: EditorAdjustments = {
 export const useEditorStore = defineStore('editor', () => {
   let imageLoadRequestId = 0
   const originalImage = ref<OriginalImage | null>(null)
-  const operations = ref<EditorOperation[]>([])
   const selection = ref<EditorSelection | null>(null)
   const adjustments = ref<EditorAdjustments>({ ...defaultAdjustments })
+  const crop = ref<EditorCrop | null>(null)
+  const isCropMode = ref(false)
   const uploadError = ref<string | null>(null)
   const isLoadingImage = ref(false)
 
   const hasImage = computed(() => originalImage.value !== null)
   const previewFilter = computed(() => buildAdjustmentFilter(adjustments.value))
+  const operations = computed<EditorOperation[]>(() => {
+    const editorOperations: EditorOperation[] = []
+
+    if (crop.value) {
+      editorOperations.push({
+        id: 'crop',
+        type: 'crop',
+        createdAt: originalImage.value?.createdAt ?? '',
+        payload: { ...crop.value }
+      })
+    }
+
+    return editorOperations
+  })
   const hasEdits = computed(() => {
     return (
-      operations.value.length > 0 ||
+      crop.value !== null ||
       selection.value !== null ||
       adjustments.value.brightness !== defaultAdjustments.brightness ||
       adjustments.value.contrast !== defaultAdjustments.contrast ||
@@ -86,8 +102,8 @@ export const useEditorStore = defineStore('editor', () => {
   }
 
   function resetEdits() {
-    operations.value = []
     selection.value = null
+    resetCrop()
     resetAllAdjustments()
   }
 
@@ -101,6 +117,31 @@ export const useEditorStore = defineStore('editor', () => {
 
   function resetAllAdjustments() {
     adjustments.value = { ...defaultAdjustments }
+  }
+
+  function openCropMode() {
+    if (originalImage.value) {
+      isCropMode.value = true
+    }
+  }
+
+  function cancelCropMode() {
+    isCropMode.value = false
+  }
+
+  function applyCrop(nextCrop: EditorCrop) {
+    crop.value = {
+      x: Math.round(nextCrop.x),
+      y: Math.round(nextCrop.y),
+      width: Math.round(nextCrop.width),
+      height: Math.round(nextCrop.height)
+    }
+    isCropMode.value = false
+  }
+
+  function resetCrop() {
+    crop.value = null
+    isCropMode.value = false
   }
 
   function removeImage() {
@@ -130,6 +171,8 @@ export const useEditorStore = defineStore('editor', () => {
     operations,
     selection,
     adjustments,
+    crop,
+    isCropMode,
     uploadError,
     isLoadingImage,
     hasImage,
@@ -140,6 +183,10 @@ export const useEditorStore = defineStore('editor', () => {
     setAdjustment,
     resetAdjustment,
     resetAllAdjustments,
+    openCropMode,
+    cancelCropMode,
+    applyCrop,
+    resetCrop,
     removeImage,
     clearUploadError
   }

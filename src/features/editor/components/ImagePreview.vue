@@ -1,21 +1,56 @@
 <template>
   <div class="image-preview">
-    <img
-      :alt="image.name"
-      class="image-preview__image"
-      :src="image.objectUrl"
-      :style="{ filter }"
-    />
+    <div class="image-preview__frame" :style="previewStyle">
+      <img
+        :alt="image.name"
+        class="image-preview__image"
+        :class="{ 'image-preview__image--cropped': crop }"
+        :src="image.objectUrl"
+        :style="imageStyle"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { OriginalImage } from '@/features/editor/types/editor'
+import { computed } from 'vue'
+import type { EditorCrop, OriginalImage } from '@/features/editor/types/editor'
 
-defineProps<{
+const props = defineProps<{
+  crop: EditorCrop | null
   filter: string
   image: OriginalImage
 }>()
+
+const previewStyle = computed(() => {
+  if (!props.crop) {
+    return {}
+  }
+
+  return {
+    aspectRatio: `${props.crop.width} / ${props.crop.height}`,
+    width: `min(100%, ${props.crop.width}px)`
+  }
+})
+
+const imageStyle = computed(() => {
+  if (!props.crop) {
+    return {
+      filter: props.filter
+    }
+  }
+
+  return {
+    filter: props.filter,
+    height: `${(props.image.naturalHeight / props.crop.height) * 100}%`,
+    left: `${(-props.crop.x / props.crop.width) * 100}%`,
+    maxHeight: 'none',
+    maxWidth: 'none',
+    position: 'absolute',
+    top: `${(-props.crop.y / props.crop.height) * 100}%`,
+    width: `${(props.image.naturalWidth / props.crop.width) * 100}%`
+  }
+})
 </script>
 
 <style scoped>
@@ -40,6 +75,16 @@ defineProps<{
   background-size: 20px 20px;
 }
 
+.image-preview__frame {
+  position: relative;
+  display: grid;
+  max-width: min(100%, 1200px);
+  max-height: min(72vh, 760px);
+  overflow: hidden;
+  place-items: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
 .image-preview__image {
   display: block;
   max-width: min(100%, 1200px);
@@ -48,12 +93,21 @@ defineProps<{
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
 
+.image-preview__image--cropped {
+  object-fit: fill;
+  box-shadow: none;
+}
+
 @media (max-width: 960px) {
   .image-preview {
     min-height: 380px;
   }
 
   .image-preview__image {
+    max-height: 58vh;
+  }
+
+  .image-preview__frame {
     max-height: 58vh;
   }
 }

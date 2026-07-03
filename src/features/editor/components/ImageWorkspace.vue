@@ -1,8 +1,16 @@
 <template>
   <main class="image-workspace">
     <div v-if="editor.hasImage" class="image-workspace__stage">
+      <CropEditor
+        v-if="editor.originalImage && editor.isCropMode"
+        :crop="editor.crop"
+        :image="editor.originalImage"
+        @apply="editor.applyCrop"
+        @cancel="editor.cancelCropMode"
+      />
       <ImagePreview
-        v-if="editor.originalImage"
+        v-else-if="editor.originalImage"
+        :crop="editor.crop"
         :filter="editor.previewFilter"
         :image="editor.originalImage"
       />
@@ -18,6 +26,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
+import CropEditor from '@/features/editor/components/CropEditor.vue'
 import ImagePreview from '@/features/editor/components/ImagePreview.vue'
 import UploadEmptyState from '@/features/editor/components/UploadEmptyState.vue'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
