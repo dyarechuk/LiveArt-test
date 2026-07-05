@@ -66,7 +66,8 @@ const imageStyle = computed(() => {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 520px;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   place-items: center;
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
@@ -85,7 +86,7 @@ const imageStyle = computed(() => {
   display: grid;
   width: fit-content;
   max-width: min(100%, 1200px);
-  max-height: min(72vh, 760px);
+  max-height: 100%;
   overflow: hidden;
   place-items: center;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
@@ -104,7 +105,7 @@ const imageStyle = computed(() => {
   display: block;
   width: auto;
   max-width: min(100%, 1200px);
-  max-height: min(72vh, 760px);
+  max-height: 100%;
   object-fit: contain;
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
 }
@@ -115,16 +116,12 @@ const imageStyle = computed(() => {
 }
 
 @media (max-width: 960px) {
-  .image-preview {
-    min-height: 380px;
-  }
-
   .image-preview__image {
-    max-height: 58vh;
+    max-height: 100%;
   }
 
   .image-preview__frame {
-    max-height: 58vh;
+    max-height: 100%;
   }
 
   .image-preview__frame--cropped {
@@ -139,7 +136,7 @@ const imageStyle = computed(() => {
 
 @media (max-width: 768px) {
   .image-preview {
-    height: clamp(260px, 52svh, 430px);
+    height: 100%;
     min-height: 0;
   }
 

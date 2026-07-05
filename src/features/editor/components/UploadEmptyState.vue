@@ -81,7 +81,8 @@ async function handleInputChange(event: Event) {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: calc(100vh - 112px);
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   place-items: center;
   border: 1px dashed rgba(var(--v-theme-on-surface), 0.22);
@@ -150,7 +151,7 @@ async function handleInputChange(event: Event) {
 
 @media (max-width: 640px) {
   .upload-empty-state {
-    min-height: clamp(300px, 46svh, 420px);
+    min-height: 0;
   }
 
   .upload-empty-state__content {

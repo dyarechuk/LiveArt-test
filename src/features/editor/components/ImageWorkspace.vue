@@ -56,7 +56,9 @@ const previewDetails = computed(() => {
   display: grid;
   width: 100%;
   max-width: 100%;
+  height: 100%;
   min-width: 0;
+  min-height: 0;
   overflow: hidden;
   padding: 24px;
 }
@@ -67,6 +69,7 @@ const previewDetails = computed(() => {
   gap: 16px;
   width: 100%;
   max-width: 100%;
+  height: 100%;
   min-height: 0;
   min-width: 0;
 }

@@ -112,6 +112,8 @@ function applyCrop() {
   gap: 16px;
   width: 100%;
   max-width: 100%;
+  height: 100%;
+  min-height: 0;
   min-width: 0;
 }
 
@@ -126,6 +128,7 @@ function applyCrop() {
   justify-content: space-between;
   gap: 16px;
   min-width: 0;
+  min-height: 0;
 }
 
 .crop-editor__header h2,
@@ -149,7 +152,7 @@ function applyCrop() {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  min-height: 520px;
+  min-height: 0;
   overflow: hidden;
   place-items: center;
   border: 1px solid rgba(var(--v-theme-primary), 0.44);
@@ -160,7 +163,7 @@ function applyCrop() {
 .crop-editor__image {
   display: block;
   max-width: 100%;
-  max-height: min(72vh, 760px);
+  max-height: 100%;
 }
 
 .crop-editor__actions {
@@ -169,12 +172,12 @@ function applyCrop() {
   gap: 10px;
   justify-content: flex-end;
   min-width: 0;
+  min-height: 0;
 }
 
-@media (max-width: 960px) {
-  .crop-editor__canvas {
-    min-height: 380px;
-  }
+.crop-editor__canvas :deep(.cropper-container) {
+  max-width: 100%;
+  max-height: 100%;
 }
 
 @media (max-width: 768px) {
@@ -196,7 +199,7 @@ function applyCrop() {
   }
 
   .crop-editor__canvas {
-    height: clamp(280px, 52svh, 430px);
+    height: auto;
     min-height: 0;
   }
 

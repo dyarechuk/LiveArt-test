@@ -220,7 +220,7 @@ async function handleInputChange(event: Event) {
   width: 100%;
   max-width: 380px;
   min-width: 0;
-  max-height: calc(100vh - 64px);
+  max-height: calc(100dvh - var(--app-header-height));
   overflow-x: hidden;
   overflow-y: auto;
   border-left: 1px solid rgba(var(--v-theme-on-surface), 0.1);
