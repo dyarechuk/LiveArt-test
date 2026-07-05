@@ -17,47 +17,47 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { EditorCrop, OriginalImage } from '@/features/editor/types/editor'
+import { computed } from "vue";
+import type { EditorCrop, OriginalImage } from "@/features/editor/types/editor";
 
 const props = defineProps<{
-  crop: EditorCrop | null
-  filter: string
-  image: OriginalImage
-}>()
+  crop: EditorCrop | null;
+  filter: string;
+  image: OriginalImage;
+}>();
 
 const previewStyle = computed(() => {
   if (!props.crop) {
-    return {}
+    return {};
   }
 
-  const cropAspectRatio = props.crop.width / props.crop.height
+  const cropAspectRatio = props.crop.width / props.crop.height;
 
   return {
     aspectRatio: `${props.crop.width} / ${props.crop.height}`,
-    '--crop-aspect-ratio': `${cropAspectRatio}`,
-    '--crop-natural-width': `${props.crop.width}px`
-  }
-})
+    "--crop-aspect-ratio": `${cropAspectRatio}`,
+    "--crop-natural-width": `${props.crop.width}px`,
+  };
+});
 
 const imageStyle = computed(() => {
   if (!props.crop) {
     return {
-      filter: props.filter
-    }
+      filter: props.filter,
+    };
   }
 
   return {
     filter: props.filter,
     height: `${(props.image.naturalHeight / props.crop.height) * 100}%`,
     left: `${(-props.crop.x / props.crop.width) * 100}%`,
-    maxHeight: 'none',
-    maxWidth: 'none',
-    position: 'absolute',
+    maxHeight: "none",
+    maxWidth: "none",
+    position: "absolute",
     top: `${(-props.crop.y / props.crop.height) * 100}%`,
-    width: `${(props.image.naturalWidth / props.crop.width) * 100}%`
-  }
-})
+    width: `${(props.image.naturalWidth / props.crop.width) * 100}%`,
+  };
+});
 </script>
 
 <style scoped>
@@ -72,11 +72,6 @@ const imageStyle = computed(() => {
   border: 1px solid rgba(var(--v-theme-on-surface), 0.12);
   border-radius: 8px;
   background-color: rgba(var(--v-theme-surface), 0.72);
-  background-image:
-    linear-gradient(45deg, rgba(var(--v-theme-on-surface), 0.05) 25%, transparent 25%),
-    linear-gradient(-45deg, rgba(var(--v-theme-on-surface), 0.05) 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, rgba(var(--v-theme-on-surface), 0.05) 75%),
-    linear-gradient(-45deg, transparent 75%, rgba(var(--v-theme-on-surface), 0.05) 75%);
   background-position:
     0 0,
     0 10px,
@@ -97,7 +92,11 @@ const imageStyle = computed(() => {
 }
 
 .image-preview__frame--cropped {
-  width: min(100%, var(--crop-natural-width), calc(min(72vh, 760px) * var(--crop-aspect-ratio)));
+  width: min(
+    100%,
+    var(--crop-natural-width),
+    calc(min(72vh, 760px) * var(--crop-aspect-ratio))
+  );
   max-height: none;
 }
 
@@ -129,7 +128,11 @@ const imageStyle = computed(() => {
   }
 
   .image-preview__frame--cropped {
-    width: min(100%, var(--crop-natural-width), calc(58vh * var(--crop-aspect-ratio)));
+    width: min(
+      100%,
+      var(--crop-natural-width),
+      calc(58vh * var(--crop-aspect-ratio))
+    );
     max-height: none;
   }
 }
@@ -146,7 +149,11 @@ const imageStyle = computed(() => {
   }
 
   .image-preview__frame--cropped {
-    width: min(100%, var(--crop-natural-width), calc(52svh * var(--crop-aspect-ratio)));
+    width: min(
+      100%,
+      var(--crop-natural-width),
+      calc(52svh * var(--crop-aspect-ratio))
+    );
   }
 
   .image-preview__image {
