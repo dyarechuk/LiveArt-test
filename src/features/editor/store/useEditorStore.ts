@@ -372,8 +372,6 @@ export const useEditorStore = defineStore('editor', () => {
     exportError,
     exportMessage,
     editorNotice,
-    exportDownload,
-    operationsDownload,
     isLoadingImage,
     isExporting,
     isExportingOperations,
@@ -400,8 +398,6 @@ export const useEditorStore = defineStore('editor', () => {
     clearExportError,
     clearExportMessage,
     clearEditorNotice,
-    clearExportDownload,
-    clearOperationsDownload,
     exportImage,
     exportOperationsJson
   }

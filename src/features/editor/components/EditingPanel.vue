@@ -23,34 +23,6 @@
       </div>
     </div>
 
-    <section class="editing-panel__section editing-panel__section--source">
-      <h3>Source</h3>
-      <dl class="editing-panel__source">
-        <div>
-          <dt>Status</dt>
-          <dd>{{ sourceStatus }}</dd>
-        </div>
-        <div v-if="editor.originalImage">
-          <dt>File</dt>
-          <dd>{{ editor.originalImage.name }}</dd>
-        </div>
-        <div v-if="editor.originalImage">
-          <dt>Type</dt>
-          <dd>{{ editor.originalImage.mimeType }}</dd>
-        </div>
-        <div v-if="editor.originalImage">
-          <dt>Dimensions</dt>
-          <dd>{{ editor.originalImage.naturalWidth }} x {{ editor.originalImage.naturalHeight }} px</dd>
-        </div>
-        <div v-if="editor.originalImage">
-          <dt>Size</dt>
-          <dd>{{ formatFileSize(editor.originalImage.size) }}</dd>
-        </div>
-      </dl>
-    </section>
-
-    <v-divider class="editing-panel__divider editing-panel__divider--source" />
-
     <section class="editing-panel__section editing-panel__section--actions">
       <h3>Actions</h3>
       <div class="editing-panel__actions">
@@ -118,28 +90,6 @@
           Reset all
         </v-btn>
         <v-btn
-          v-if="editor.exportDownload"
-          class="editing-panel__action editing-panel__action--download"
-          block
-          :download="editor.exportDownload.filename"
-          :href="editor.exportDownload.objectUrl"
-          prepend-icon="mdi-download-circle-outline"
-          variant="tonal"
-        >
-          Download again
-        </v-btn>
-        <v-btn
-          v-if="editor.operationsDownload"
-          class="editing-panel__action editing-panel__action--download-json"
-          block
-          :download="editor.operationsDownload.filename"
-          :href="editor.operationsDownload.objectUrl"
-          prepend-icon="mdi-file-download-outline"
-          variant="tonal"
-        >
-          Download JSON again
-        </v-btn>
-        <v-btn
           class="editing-panel__action editing-panel__action--remove"
           :disabled="!editor.hasImage || editor.isBusy"
           block
@@ -162,12 +112,6 @@
 
     <v-divider class="editing-panel__divider editing-panel__divider--actions" />
 
-    <section class="editing-panel__section editing-panel__section--preview">
-      <PreviewModeSwitcher />
-    </section>
-
-    <v-divider class="editing-panel__divider editing-panel__divider--preview" />
-
     <section class="editing-panel__section editing-panel__section--adjustments">
       <AdjustmentPanel />
     </section>
@@ -179,6 +123,40 @@
     </section>
 
     <v-divider class="editing-panel__divider editing-panel__divider--filter" />
+
+    <section class="editing-panel__section editing-panel__section--preview">
+      <PreviewModeSwitcher />
+    </section>
+
+    <v-divider class="editing-panel__divider editing-panel__divider--preview" />
+
+    <section class="editing-panel__section editing-panel__section--source">
+      <h3>Source</h3>
+      <dl class="editing-panel__source">
+        <div>
+          <dt>Status</dt>
+          <dd>{{ sourceStatus }}</dd>
+        </div>
+        <div v-if="editor.originalImage">
+          <dt>File</dt>
+          <dd :title="editor.originalImage.name">{{ editor.originalImage.name }}</dd>
+        </div>
+        <div v-if="editor.originalImage">
+          <dt>Type</dt>
+          <dd>{{ editor.originalImage.mimeType }}</dd>
+        </div>
+        <div v-if="editor.originalImage">
+          <dt>Dimensions</dt>
+          <dd>{{ editor.originalImage.naturalWidth }} x {{ editor.originalImage.naturalHeight }} px</dd>
+        </div>
+        <div v-if="editor.originalImage">
+          <dt>Size</dt>
+          <dd>{{ formatFileSize(editor.originalImage.size) }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <v-divider class="editing-panel__divider editing-panel__divider--source" />
 
     <section class="editing-panel__section editing-panel__section--state">
       <h3>State model</h3>
@@ -243,6 +221,7 @@ async function handleInputChange(event: Event) {
   max-width: 380px;
   min-width: 0;
   max-height: calc(100vh - 64px);
+  overflow-x: hidden;
   overflow-y: auto;
   border-left: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   background: rgba(var(--v-theme-surface), 0.94);
@@ -317,8 +296,11 @@ async function handleInputChange(event: Event) {
 .editing-panel__source dd {
   min-width: 0;
   margin: 0;
-  overflow-wrap: anywhere;
+  overflow: hidden;
   font-size: 0.94rem;
+  overflow-wrap: normal;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .editing-panel__actions {
@@ -329,11 +311,14 @@ async function handleInputChange(event: Event) {
 
 .editing-panel__action {
   min-width: 0;
+  font-size: 0.95rem;
 }
 
 .editing-panel__action :deep(.v-btn__content) {
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
+  font-size: inherit;
   text-align: center;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -351,6 +336,10 @@ async function handleInputChange(event: Event) {
     max-height: none;
     border-top: 1px solid rgba(var(--v-theme-on-surface), 0.1);
     border-left: 0;
+  }
+
+  .editing-panel__action {
+    font-size: 0.9rem;
   }
 }
 
@@ -380,42 +369,6 @@ async function handleInputChange(event: Event) {
     font-size: 0.84rem;
   }
 
-  .editing-panel__section--actions {
-    order: 1;
-  }
-
-  .editing-panel__divider--actions {
-    order: 2;
-  }
-
-  .editing-panel__section--preview {
-    order: 3;
-  }
-
-  .editing-panel__divider--preview {
-    order: 4;
-  }
-
-  .editing-panel__section--adjustments {
-    order: 5;
-  }
-
-  .editing-panel__divider--adjustments {
-    order: 6;
-  }
-
-  .editing-panel__section--filter {
-    order: 7;
-  }
-
-  .editing-panel__divider--filter {
-    order: 8;
-  }
-
-  .editing-panel__section--source {
-    order: 9;
-  }
-
   .editing-panel__divider--source,
   .editing-panel__section--state {
     display: none;
@@ -427,6 +380,7 @@ async function handleInputChange(event: Event) {
 
   .editing-panel__action {
     width: 100%;
+    font-size: clamp(0.72rem, 2vw, 0.85rem);
   }
 
   .editing-panel__source {
@@ -438,11 +392,7 @@ async function handleInputChange(event: Event) {
   }
 
   .editing-panel__source dd {
-    overflow: hidden;
     font-size: 0.84rem;
-    overflow-wrap: normal;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
 }
 </style>

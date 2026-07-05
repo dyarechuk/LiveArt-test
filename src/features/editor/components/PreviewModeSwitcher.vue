@@ -73,13 +73,22 @@ function setPreviewMode(mode: EditorPreviewMode | undefined) {
 
 .preview-mode-switcher__toggle :deep(.v-btn) {
   min-width: 0;
+  font-size: 0.95rem;
 }
 
 .preview-mode-switcher__toggle :deep(.v-btn__content) {
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
+  font-size: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .preview-mode-switcher__toggle :deep(.v-btn) {
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -88,6 +97,7 @@ function setPreviewMode(mode: EditorPreviewMode | undefined) {
   }
 
   .preview-mode-switcher__toggle :deep(.v-btn) {
+    font-size: clamp(0.72rem, 2vw, 0.85rem);
     padding-inline: 8px;
   }
 }

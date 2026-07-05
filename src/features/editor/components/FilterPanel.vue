@@ -83,13 +83,25 @@ function setFilter(filter: EditorFilterName | undefined) {
 
 .filter-panel__toggle :deep(.v-btn) {
   min-width: 0;
+  padding-inline: 6px;
+  font-size: 0.86rem;
+  letter-spacing: 0;
+  
 }
 
 .filter-panel__toggle :deep(.v-btn__content) {
+  max-width: 100%;
   min-width: 0;
   overflow: hidden;
+  font-size: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+@media (max-width: 960px) {
+  .filter-panel__toggle :deep(.v-btn) {
+    font-size: 0.82rem;
+  }
 }
 
 @media (max-width: 768px) {
@@ -98,11 +110,8 @@ function setFilter(filter: EditorFilterName | undefined) {
   }
 
   .filter-panel__toggle :deep(.v-btn) {
-    padding-inline: 8px;
-  }
-
-  .filter-panel__toggle :deep(.v-btn__content) {
-    font-size: 0.76rem;
+    padding-inline: 4px;
+    font-size: clamp(0.72rem, 2vw, 0.82rem);
   }
 }
 </style>
