@@ -30,7 +30,7 @@ import type { EditorPreviewMode } from '@/features/editor/types/editor'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 
 const editor = useEditorStore()
-const controlsDisabled = computed(() => !editor.hasImage || editor.isCropMode || editor.isLoadingImage)
+const controlsDisabled = computed(() => !editor.hasImage || editor.isCropMode || editor.isBusy)
 
 function setPreviewMode(mode: EditorPreviewMode | undefined) {
   if (mode) {

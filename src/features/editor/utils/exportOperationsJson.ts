@@ -44,6 +44,24 @@ function buildSource(input: EditedImageExportInput): EditorOperationsExportSourc
 function buildOperations(input: EditedImageExportInput): EditorOperationsExport['operations'] {
   const operations: EditorOperationsExport['operations'] = []
 
+  if (input.backgroundRemoval) {
+    operations.push({
+      type: 'background-removal',
+      model: '@imgly/background-removal',
+      quality: input.backgroundRemoval.quality,
+      postProcessing: input.backgroundRemoval.postProcessing,
+      outputMimeType: 'image/png'
+    })
+
+    if (input.backgroundRemoval.isMaskRefined) {
+      operations.push({
+        type: 'mask-refinement',
+        mode: 'manual',
+        applied: true
+      })
+    }
+  }
+
   if (input.crop) {
     operations.push({
       type: 'crop',
@@ -58,7 +76,11 @@ function buildOperations(input: EditedImageExportInput): EditorOperationsExport[
     type: 'adjust',
     brightness: input.adjustments.brightness,
     contrast: input.adjustments.contrast,
-    saturation: input.adjustments.saturation
+    saturation: input.adjustments.saturation,
+    highlights: input.adjustments.highlights,
+    shadows: input.adjustments.shadows,
+    whites: input.adjustments.whites,
+    blacks: input.adjustments.blacks
   })
 
   if (input.filter !== 'none') {

@@ -3,11 +3,13 @@
     <ImageWorkspace />
     <EditingPanel />
   </section>
+  <MaskRefinementDialog />
 </template>
 
 <script setup lang="ts">
 import ImageWorkspace from '@/features/editor/components/ImageWorkspace.vue'
 import EditingPanel from '@/features/editor/components/EditingPanel.vue'
+import MaskRefinementDialog from '@/features/editor/components/MaskRefinementDialog.vue'
 </script>
 
 <style scoped>

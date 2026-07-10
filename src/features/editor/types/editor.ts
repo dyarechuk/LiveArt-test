@@ -14,19 +14,83 @@ export interface EditorAdjustments {
   brightness: number
   contrast: number
   saturation: number
+  highlights: number
+  shadows: number
+  whites: number
+  blacks: number
 }
 
 export type EditorAdjustmentKey = keyof EditorAdjustments
 
+export type TonalAdjustmentKey = 'highlights' | 'shadows' | 'whites' | 'blacks'
+
 export type EditorFilterName = 'none' | 'greyscale' | 'sepia'
 
 export type EditorPreviewMode = 'original' | 'current'
+
+export type FilterPresetSchemaVersion = 1
+
+export type BackgroundRemovalStatus = 'idle' | 'processing' | 'applied' | 'error'
+
+export type BackgroundRemovalQuality = 'fast' | 'balanced' | 'product'
+
+export type MaskBrushMode = 'restore' | 'erase'
 
 export type EditorNoticeType = 'info' | 'warning' | 'success'
 
 export interface EditorNotice {
   message: string
   type: EditorNoticeType
+}
+
+export interface FilterPreset {
+  schemaVersion: FilterPresetSchemaVersion
+  type: 'filter-preset'
+  name: string
+  adjustments: EditorAdjustments
+  filter: EditorFilterName
+  createdAt: string
+}
+
+export type FilterPresetValidationResult =
+  | {
+      valid: true
+      preset: FilterPreset
+    }
+  | {
+      valid: false
+      error: string
+    }
+
+export interface BackgroundRemovalPostProcessing {
+  fillInternalHoles: boolean
+  edgeRefinement: boolean
+}
+
+export interface BackgroundRemovalState {
+  status: BackgroundRemovalStatus
+  resultUrl: string | null
+  resultMimeType: 'image/png' | null
+  quality: BackgroundRemovalQuality | null
+  postProcessing: BackgroundRemovalPostProcessing | null
+  isMaskRefined: boolean
+  errorMessage: string | null
+}
+
+export interface BackgroundRemovalResult {
+  resultUrl: string
+  resultMimeType: 'image/png'
+  quality: BackgroundRemovalQuality
+  postProcessing: BackgroundRemovalPostProcessing
+  isMaskRefined: boolean
+}
+
+export interface EditorImageSource {
+  name: string
+  objectUrl: string
+  mimeType: string
+  naturalWidth: number
+  naturalHeight: number
 }
 
 export interface EditorCrop {
@@ -52,6 +116,7 @@ export interface EditorOperation {
 
 export interface EditedImageExportInput {
   adjustments: EditorAdjustments
+  backgroundRemoval: BackgroundRemovalResult | null
   crop: EditorCrop | null
   filter: EditorFilterName
   originalImage: OriginalImage
@@ -83,6 +148,20 @@ export interface CropOperationExport {
   height: number
 }
 
+export interface BackgroundRemovalOperationExport {
+  type: 'background-removal'
+  model: '@imgly/background-removal'
+  quality: BackgroundRemovalQuality
+  postProcessing: BackgroundRemovalPostProcessing
+  outputMimeType: 'image/png'
+}
+
+export interface MaskRefinementOperationExport {
+  type: 'mask-refinement'
+  mode: 'manual'
+  applied: true
+}
+
 export interface AdjustmentOperationExport extends EditorAdjustments {
   type: 'adjust'
 }
@@ -93,6 +172,8 @@ export interface FilterOperationExport {
 }
 
 export type EditorOperationExport =
+  | BackgroundRemovalOperationExport
+  | MaskRefinementOperationExport
   | CropOperationExport
   | AdjustmentOperationExport
   | FilterOperationExport

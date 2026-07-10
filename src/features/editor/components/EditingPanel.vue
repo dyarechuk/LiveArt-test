@@ -1,5 +1,10 @@
 <template>
-  <aside class="editing-panel">
+  <aside
+    ref="panelElement"
+    class="editing-panel"
+    :aria-busy="isBackgroundRemovalProcessing"
+    :class="{ 'editing-panel--locked': isBackgroundRemovalProcessing }"
+  >
     <div class="editing-panel__header">
       <div>
         <p class="editing-panel__eyebrow">Editor</p>
@@ -31,7 +36,7 @@
           :loading="editor.isLoadingImage"
           block
           color="primary"
-          :disabled="editor.isExporting || editor.isExportingOperations"
+          :disabled="editor.isBusy"
           prepend-icon="mdi-image-plus"
           @click="fileInput?.click()"
         >
@@ -48,8 +53,75 @@
           {{ editor.crop ? 'Edit crop' : 'Crop image' }}
         </v-btn>
         <v-btn
+          class="editing-panel__action editing-panel__action--background"
+          :disabled="!editor.hasImage || editor.isBusy || editor.isCropMode"
+          :loading="editor.backgroundRemoval.status === 'processing'"
+          block
+          prepend-icon="mdi-image-minus"
+          variant="tonal"
+          @click="editor.removeImageBackground"
+        >
+          {{ editor.backgroundRemoval.status === 'processing' ? 'Removing background...' : 'Remove Background' }}
+        </v-btn>
+        <div class="editing-panel__background-quality">
+          <v-btn-toggle
+            class="editing-panel__quality-toggle"
+            density="compact"
+            divided
+            mandatory
+            :model-value="editor.backgroundRemovalQuality"
+            variant="outlined"
+            @update:model-value="setBackgroundRemovalQuality"
+          >
+            <v-btn
+              v-for="option in backgroundRemovalQualityOptions"
+              :key="option.value"
+              :disabled="editor.backgroundRemoval.status === 'processing'"
+              :value="option.value"
+            >
+              {{ option.label }}
+            </v-btn>
+          </v-btn-toggle>
+          <p class="editing-panel__background-help">
+            Fast is quicker. Balanced works for most photos. Product preserves packaging and internal details better.
+          </p>
+        </div>
+        <v-btn
+          v-if="editor.isBackgroundRemovalApplied || editor.backgroundRemoval.status === 'error'"
+          class="editing-panel__action editing-panel__action--restore-background"
+          :disabled="editor.backgroundRemoval.status === 'processing'"
+          block
+          prepend-icon="mdi-image-refresh-outline"
+          variant="tonal"
+          @click="editor.clearBackgroundRemoval"
+        >
+          Restore Background
+        </v-btn>
+        <v-chip
+          v-if="editor.isBackgroundRemovalApplied"
+          class="editing-panel__background-status"
+          color="success"
+          density="comfortable"
+          prepend-icon="mdi-check-circle-outline"
+          size="small"
+          variant="tonal"
+        >
+          {{ editor.backgroundRemovalResult?.isMaskRefined ? 'Mask refined' : 'Background removed' }}
+        </v-chip>
+        <v-btn
+          v-if="editor.canRefineMask"
+          class="editing-panel__action editing-panel__action--refine-mask"
+          :disabled="editor.isBusy || editor.isCropMode"
+          block
+          prepend-icon="mdi-brush"
+          variant="tonal"
+          @click="editor.openMaskRefinement()"
+        >
+          Refine Mask
+        </v-btn>
+        <v-btn
           class="editing-panel__action editing-panel__action--export"
-          :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExportingOperations"
+          :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExportingOperations || editor.backgroundRemoval.status === 'processing'"
           :loading="editor.isExporting"
           block
           color="success"
@@ -60,7 +132,7 @@
         </v-btn>
         <v-btn
           class="editing-panel__action editing-panel__action--json"
-          :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExporting"
+          :disabled="!editor.hasImage || editor.isCropMode || editor.isLoadingImage || editor.isExporting || editor.backgroundRemoval.status === 'processing'"
           :loading="editor.isExportingOperations"
           block
           prepend-icon="mdi-code-json"
@@ -169,19 +241,57 @@
       </v-list>
     </section>
 
+    <div
+      v-if="isBackgroundRemovalProcessing"
+      class="editing-panel__processing-overlay"
+      role="status"
+      aria-live="polite"
+    >
+      <div class="editing-panel__processing-card">
+        <v-icon class="editing-panel__processing-icon" icon="mdi-loading" size="28" />
+        <strong>Removing background...</strong>
+        <span>Controls will unlock when processing finishes.</span>
+      </div>
+    </div>
   </aside>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import AdjustmentPanel from '@/features/editor/components/AdjustmentPanel.vue'
 import FilterPanel from '@/features/editor/components/FilterPanel.vue'
 import PreviewModeSwitcher from '@/features/editor/components/PreviewModeSwitcher.vue'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
+import type { BackgroundRemovalQuality } from '@/features/editor/types/editor'
 import { formatFileSize } from '@/features/editor/utils/formatFileSize'
 
 const editor = useEditorStore()
 const fileInput = ref<HTMLInputElement>()
+const panelElement = ref<HTMLElement>()
+const isBackgroundRemovalProcessing = computed(() => editor.backgroundRemoval.status === 'processing')
+const backgroundRemovalQualityOptions: Array<{
+  label: string
+  value: BackgroundRemovalQuality
+}> = [
+  {
+    label: 'Fast',
+    value: 'fast'
+  },
+  {
+    label: 'Balanced',
+    value: 'balanced'
+  },
+  {
+    label: 'Product',
+    value: 'product'
+  }
+]
+
+watch(isBackgroundRemovalProcessing, (isProcessing) => {
+  if (isProcessing && panelElement.value) {
+    panelElement.value.scrollTop = 0
+  }
+})
 
 const sourceStatus = computed(() => {
   if (editor.isLoadingImage) {
@@ -209,10 +319,17 @@ async function handleInputChange(event: Event) {
 
   input.value = ''
 }
+
+function setBackgroundRemovalQuality(value: BackgroundRemovalQuality | null) {
+  if (value) {
+    editor.setBackgroundRemovalQuality(value)
+  }
+}
 </script>
 
 <style scoped>
 .editing-panel {
+  position: relative;
   display: flex;
   flex-direction: column;
   flex: 0 0 380px;
@@ -226,6 +343,15 @@ async function handleInputChange(event: Event) {
   border-left: 1px solid rgba(var(--v-theme-on-surface), 0.1);
   background: rgba(var(--v-theme-surface), 0.94);
   padding: 24px;
+}
+
+.editing-panel--locked {
+  overflow-y: hidden;
+}
+
+.editing-panel--locked > :not(.editing-panel__processing-overlay) {
+  pointer-events: none;
+  user-select: none;
 }
 
 .editing-panel__header {
@@ -324,8 +450,105 @@ async function handleInputChange(event: Event) {
   white-space: nowrap;
 }
 
+.editing-panel__background-quality {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+}
+
+.editing-panel__quality-toggle {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: 100%;
+  min-width: 0;
+}
+
+.editing-panel__quality-toggle :deep(.v-btn) {
+  min-width: 0;
+  padding-inline: 8px;
+  font-size: 0.88rem;
+}
+
+.editing-panel__quality-toggle :deep(.v-btn__content) {
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+  font-size: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.editing-panel__background-help {
+  margin: 0;
+  color: rgb(var(--v-theme-on-surface), 0.62);
+  font-size: 0.76rem;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.editing-panel__background-status {
+  justify-self: stretch;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.editing-panel__background-status :deep(.v-chip__content) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .editing-panel__input {
   display: none;
+}
+
+.editing-panel__processing-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  padding: 24px;
+  place-items: center;
+  background: rgba(var(--v-theme-surface), 0.74);
+  backdrop-filter: blur(8px);
+  cursor: progress;
+  touch-action: none;
+}
+
+.editing-panel__processing-card {
+  display: grid;
+  gap: 8px;
+  width: min(100%, 280px);
+  min-width: 0;
+  padding: 18px;
+  place-items: center;
+  border: 1px solid rgba(var(--v-theme-primary), 0.28);
+  border-radius: 8px;
+  background: rgba(var(--v-theme-surface-bright), 0.94);
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.3);
+  text-align: center;
+}
+
+.editing-panel__processing-card strong {
+  font-size: 0.98rem;
+}
+
+.editing-panel__processing-card span {
+  color: rgb(var(--v-theme-on-surface), 0.68);
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.editing-panel__processing-icon {
+  color: rgb(var(--v-theme-primary));
+  animation: editing-panel-spin 0.9s linear infinite;
+}
+
+@keyframes editing-panel-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 960px) {
@@ -340,6 +563,10 @@ async function handleInputChange(event: Event) {
 
   .editing-panel__action {
     font-size: 0.9rem;
+  }
+
+  .editing-panel__quality-toggle :deep(.v-btn) {
+    font-size: 0.86rem;
   }
 }
 
@@ -381,6 +608,19 @@ async function handleInputChange(event: Event) {
   .editing-panel__action {
     width: 100%;
     font-size: clamp(0.72rem, 2vw, 0.85rem);
+  }
+
+  .editing-panel__quality-toggle :deep(.v-btn) {
+    padding-inline: 4px;
+    font-size: clamp(0.72rem, 2vw, 0.85rem);
+  }
+
+  .editing-panel__background-help {
+    font-size: 0.72rem;
+  }
+
+  .editing-panel__processing-overlay {
+    padding: 12px;
   }
 
   .editing-panel__source {

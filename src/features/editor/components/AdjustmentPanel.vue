@@ -7,7 +7,7 @@
         prepend-icon="mdi-refresh"
         size="small"
         variant="tonal"
-        @click="editor.resetAllAdjustments"
+        @click="resetAllAdjustments"
       >
         Reset all
       </v-btn>
@@ -17,7 +17,7 @@
       <div v-for="control in controls" :key="control.key" class="adjustment-panel__control">
         <div class="adjustment-panel__label">
           <span>{{ control.label }}</span>
-          <span class="adjustment-panel__value">{{ editor.adjustments[control.key] }}%</span>
+          <span class="adjustment-panel__value">{{ formatAdjustmentValue(control) }}</span>
         </div>
         <div class="adjustment-panel__row">
           <v-slider
@@ -25,13 +25,14 @@
             density="comfortable"
             :disabled="controlsDisabled"
             hide-details
-            max="200"
-            min="0"
-            :model-value="editor.adjustments[control.key]"
-            step="1"
+            :max="control.max"
+            :min="control.min"
+            :model-value="localAdjustments[control.key]"
+            :step="control.step"
             track-color="surface-light"
             :aria-label="control.label"
-            @update:model-value="setAdjustment(control.key, $event)"
+            @end="commitAdjustment(control.key)"
+            @update:model-value="queueAdjustment(control.key, $event)"
           />
           <v-btn
             :aria-label="`Reset ${control.label.toLowerCase()}`"
@@ -39,7 +40,7 @@
             icon="mdi-restore"
             size="small"
             variant="text"
-            @click="editor.resetAdjustment(control.key)"
+            @click="resetAdjustment(control.key)"
           />
         </div>
       </div>
@@ -48,34 +49,169 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { EditorAdjustmentKey } from '@/features/editor/types/editor'
+import { computed, onBeforeUnmount, ref, watch } from 'vue'
+import type { EditorAdjustmentKey, EditorAdjustments } from '@/features/editor/types/editor'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 
 interface AdjustmentControl {
   key: EditorAdjustmentKey
   label: string
+  max: number
+  min: number
+  step: number
+  suffix?: string
 }
 
 const editor = useEditorStore()
 const controlsDisabled = computed(() => !editor.hasImage || editor.isBusy || editor.isCropMode)
+const localAdjustments = ref<EditorAdjustments>({ ...editor.adjustments })
+const pendingAdjustments = new Map<EditorAdjustmentKey, number>()
+let commitFrame = 0
 const controls: AdjustmentControl[] = [
   {
     key: 'brightness',
-    label: 'Brightness'
+    label: 'Brightness',
+    max: 200,
+    min: 0,
+    step: 1,
+    suffix: '%'
   },
   {
     key: 'contrast',
-    label: 'Contrast'
+    label: 'Contrast',
+    max: 200,
+    min: 0,
+    step: 1,
+    suffix: '%'
   },
   {
     key: 'saturation',
-    label: 'Saturation'
+    label: 'Saturation',
+    max: 200,
+    min: 0,
+    step: 1,
+    suffix: '%'
+  },
+  {
+    key: 'highlights',
+    label: 'Highlights',
+    max: 100,
+    min: -100,
+    step: 1
+  },
+  {
+    key: 'shadows',
+    label: 'Shadows',
+    max: 100,
+    min: -100,
+    step: 1
+  },
+  {
+    key: 'whites',
+    label: 'Whites',
+    max: 100,
+    min: -100,
+    step: 1
+  },
+  {
+    key: 'blacks',
+    label: 'Blacks',
+    max: 100,
+    min: -100,
+    step: 1
   }
 ]
 
-function setAdjustment(key: EditorAdjustmentKey, value: number | string) {
-  editor.setAdjustment(key, Number(value))
+watch(
+  () => ({ ...editor.adjustments }),
+  (adjustments) => {
+    if (commitFrame === 0 && pendingAdjustments.size === 0) {
+      localAdjustments.value = { ...adjustments }
+    }
+  }
+)
+
+onBeforeUnmount(() => {
+  flushPendingAdjustments()
+})
+
+function queueAdjustment(key: EditorAdjustmentKey, value: number | string) {
+  const nextValue = Number(value)
+
+  localAdjustments.value = {
+    ...localAdjustments.value,
+    [key]: nextValue
+  }
+  pendingAdjustments.set(key, nextValue)
+  scheduleAdjustmentCommit()
+}
+
+function commitAdjustment(key: EditorAdjustmentKey, value?: number | string) {
+  if (value !== undefined) {
+    const nextValue = Number(value)
+
+    localAdjustments.value = {
+      ...localAdjustments.value,
+      [key]: nextValue
+    }
+    pendingAdjustments.set(key, nextValue)
+  }
+
+  flushPendingAdjustments()
+}
+
+function resetAdjustment(key: EditorAdjustmentKey) {
+  flushPendingAdjustments()
+  editor.resetAdjustment(key)
+  localAdjustments.value = { ...editor.adjustments }
+}
+
+function resetAllAdjustments() {
+  flushPendingAdjustments()
+  editor.resetAllAdjustments()
+  localAdjustments.value = { ...editor.adjustments }
+}
+
+function scheduleAdjustmentCommit() {
+  if (commitFrame) {
+    return
+  }
+
+  commitFrame = requestAnimationFrame(() => {
+    commitFrame = 0
+    commitPendingAdjustments()
+  })
+}
+
+function flushPendingAdjustments() {
+  if (commitFrame) {
+    cancelAnimationFrame(commitFrame)
+    commitFrame = 0
+  }
+
+  commitPendingAdjustments()
+}
+
+function commitPendingAdjustments() {
+  if (pendingAdjustments.size === 0) {
+    return
+  }
+
+  for (const [key, value] of pendingAdjustments) {
+    editor.setAdjustment(key, value)
+  }
+
+  pendingAdjustments.clear()
+}
+
+function formatAdjustmentValue(control: AdjustmentControl) {
+  const value = localAdjustments.value[control.key]
+
+  if (control.suffix) {
+    return `${value}${control.suffix}`
+  }
+
+  return value > 0 ? `+${value}` : `${value}`
 }
 </script>
 
@@ -106,7 +242,7 @@ function setAdjustment(key: EditorAdjustmentKey, value: number | string) {
 
 .adjustment-panel__controls {
   display: grid;
-  gap: 18px;
+  gap: 14px;
   min-width: 0;
 }
 

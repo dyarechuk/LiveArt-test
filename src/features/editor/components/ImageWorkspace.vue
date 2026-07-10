@@ -2,17 +2,20 @@
   <main class="image-workspace">
     <div v-if="editor.hasImage" class="image-workspace__stage">
       <CropEditor
-        v-if="editor.originalImage && editor.isCropMode"
+        v-if="editor.cropImageSource && editor.isCropMode"
         :crop="editor.crop"
-        :image="editor.originalImage"
+        :has-transparency="editor.cropHasTransparency"
+        :image="editor.cropImageSource"
         @apply="editor.applyCrop"
         @cancel="editor.cancelCropMode"
       />
       <ImagePreview
-        v-else-if="editor.originalImage"
+        v-else-if="editor.previewImageSource"
+        :adjustments="editor.displayAdjustments"
         :crop="editor.displayCrop"
         :filter="editor.displayFilter"
-        :image="editor.originalImage"
+        :has-transparency="editor.previewHasTransparency"
+        :image="editor.previewImageSource"
       />
       <div v-if="editor.originalImage" class="image-workspace__meta">
         <span class="image-workspace__filename" :title="editor.originalImage.name">{{ editor.originalImage.name }}</span>

@@ -3,16 +3,16 @@ import type {
   EditedImageExport,
   EditedImageExportInput
 } from '@/features/editor/types/editor'
-import { buildAdjustmentFilter } from '@/features/editor/utils/buildAdjustmentFilter'
 import { triggerFileDownload } from '@/features/editor/utils/downloadFile'
+import { applyImageAdjustments } from '@/features/editor/utils/tonalAdjustments'
 
 const supportedExportMimeTypes = new Set(['image/png', 'image/jpeg', 'image/webp'])
 
 export async function exportEditedImage(input: EditedImageExportInput): Promise<EditedImageExport> {
-  const image = await loadImage(input.originalImage.objectUrl)
+  const image = await loadImage(input.backgroundRemoval?.resultUrl ?? input.originalImage.objectUrl)
   const crop = normalizeCrop(input)
   const canvas = document.createElement('canvas')
-  const context = canvas.getContext('2d')
+  const context = canvas.getContext('2d', { willReadFrequently: true })
 
   if (!context) {
     throw new Error('Canvas rendering is not available in this browser.')
@@ -20,7 +20,6 @@ export async function exportEditedImage(input: EditedImageExportInput): Promise<
 
   canvas.width = Math.max(1, Math.round(crop.width))
   canvas.height = Math.max(1, Math.round(crop.height))
-  context.filter = buildAdjustmentFilter(input.adjustments, input.filter)
   context.drawImage(
     image,
     crop.x,
@@ -32,8 +31,11 @@ export async function exportEditedImage(input: EditedImageExportInput): Promise<
     canvas.width,
     canvas.height
   )
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+  applyImageAdjustments(imageData, input.adjustments, input.filter)
+  context.putImageData(imageData, 0, 0)
 
-  const mimeType = getExportMimeType(input.originalImage.mimeType)
+  const mimeType = input.backgroundRemoval ? 'image/png' : getExportMimeType(input.originalImage.mimeType)
   const blob = await canvasToBlob(canvas, mimeType)
   const outputMimeType = blob.type || mimeType
 

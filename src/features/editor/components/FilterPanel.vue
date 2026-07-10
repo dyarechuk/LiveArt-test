@@ -24,15 +24,48 @@
         Sepia
       </v-btn>
     </v-btn-toggle>
+
+    <div class="filter-panel__preset-actions">
+      <v-btn
+        block
+        class="filter-panel__preset-action"
+        :disabled="controlsDisabled"
+        :loading="editor.isExportingFilterPreset"
+        prepend-icon="mdi-download"
+        variant="tonal"
+        @click="editor.exportFilterPreset"
+      >
+        Export Filter Preset
+      </v-btn>
+      <v-btn
+        block
+        class="filter-panel__preset-action"
+        :disabled="controlsDisabled"
+        :loading="editor.isImportingFilterPreset"
+        prepend-icon="mdi-upload"
+        variant="tonal"
+        @click="presetInput?.click()"
+      >
+        Import Filter Preset
+      </v-btn>
+      <input
+        ref="presetInput"
+        accept=".json,application/json"
+        class="filter-panel__input"
+        type="file"
+        @change="handlePresetInputChange"
+      />
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import type { EditorFilterName } from '@/features/editor/types/editor'
 import { useEditorStore } from '@/features/editor/store/useEditorStore'
 
 const editor = useEditorStore()
+const presetInput = ref<HTMLInputElement>()
 const controlsDisabled = computed(() => !editor.hasImage || editor.isBusy || editor.isCropMode)
 const filterLabels: Record<EditorFilterName, string> = {
   none: 'No filter',
@@ -46,6 +79,14 @@ function setFilter(filter: EditorFilterName | undefined) {
   if (filter) {
     editor.setFilter(filter)
   }
+}
+
+async function handlePresetInputChange(event: Event) {
+  const input = event.target as HTMLInputElement
+  const file = input.files?.item(0) ?? undefined
+
+  await editor.importFilterPreset(file)
+  input.value = ''
 }
 </script>
 
@@ -86,10 +127,11 @@ function setFilter(filter: EditorFilterName | undefined) {
   padding-inline: 6px;
   font-size: 0.86rem;
   letter-spacing: 0;
-  
+  text-transform: none;
 }
 
-.filter-panel__toggle :deep(.v-btn__content) {
+.filter-panel__toggle :deep(.v-btn__content),
+.filter-panel__preset-action :deep(.v-btn__content) {
   max-width: 100%;
   min-width: 0;
   overflow: hidden;
@@ -98,8 +140,28 @@ function setFilter(filter: EditorFilterName | undefined) {
   white-space: nowrap;
 }
 
+.filter-panel__preset-actions {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.filter-panel__preset-action {
+  min-width: 0;
+  font-size: 0.95rem;
+}
+
+.filter-panel__preset-action :deep(.v-btn__content) {
+  text-align: center;
+}
+
+.filter-panel__input {
+  display: none;
+}
+
 @media (max-width: 960px) {
-  .filter-panel__toggle :deep(.v-btn) {
+  .filter-panel__toggle :deep(.v-btn),
+  .filter-panel__preset-action {
     font-size: 0.82rem;
   }
 }
@@ -112,6 +174,14 @@ function setFilter(filter: EditorFilterName | undefined) {
   .filter-panel__toggle :deep(.v-btn) {
     padding-inline: 4px;
     font-size: clamp(0.72rem, 2vw, 0.82rem);
+  }
+
+  .filter-panel__preset-actions {
+    gap: 6px;
+  }
+
+  .filter-panel__preset-action {
+    font-size: clamp(0.72rem, 2vw, 0.85rem);
   }
 }
 </style>

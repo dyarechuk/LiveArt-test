@@ -14,7 +14,13 @@
     </div>
 
     <div class="crop-editor__canvas">
-      <img ref="imageElement" :alt="image.name" class="crop-editor__image" :src="image.objectUrl" />
+      <img
+        ref="imageElement"
+        :alt="image.name"
+        class="crop-editor__image"
+        :class="{ 'crop-editor__image--transparent': hasTransparency }"
+        :src="image.objectUrl"
+      />
     </div>
 
     <div class="crop-editor__actions">
@@ -32,11 +38,12 @@
 import 'cropperjs/dist/cropper.css'
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import Cropper from 'cropperjs'
-import type { EditorCrop, OriginalImage } from '@/features/editor/types/editor'
+import type { EditorCrop, EditorImageSource } from '@/features/editor/types/editor'
 
 const props = defineProps<{
   crop: EditorCrop | null
-  image: OriginalImage
+  hasTransparency: boolean
+  image: EditorImageSource
 }>()
 
 const emit = defineEmits<{
@@ -71,15 +78,28 @@ function createCropper() {
   }
 
   cropper = new Cropper(imageElement.value, {
-    autoCropArea: 0.8,
+    autoCropArea: 1,
     background: false,
     checkOrientation: false,
     responsive: true,
     viewMode: 1,
     ready() {
-      if (props.crop && cropper) {
-        cropper.setData(props.crop)
+      if (!cropper) {
+        return
       }
+
+      if (props.crop) {
+        cropper.setData(props.crop)
+        return
+      }
+
+      const canvasData = cropper.getCanvasData()
+      cropper.setCropBoxData({
+        left: canvasData.left,
+        top: canvasData.top,
+        width: canvasData.width,
+        height: canvasData.height
+      })
     }
   })
 }
@@ -152,18 +172,37 @@ function applyCrop() {
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
   place-items: center;
   border: 1px solid rgba(var(--v-theme-primary), 0.44);
   border-radius: 8px;
   background: rgba(var(--v-theme-surface), 0.72);
+  background-image:
+    linear-gradient(45deg, rgba(var(--v-theme-on-surface), 0.08) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(var(--v-theme-on-surface), 0.08) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(var(--v-theme-on-surface), 0.08) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(var(--v-theme-on-surface), 0.08) 75%);
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+  background-size: 20px 20px;
 }
 
 .crop-editor__image {
   display: block;
+  width: auto;
+  height: auto;
   max-width: 100%;
   max-height: 100%;
+  object-fit: contain;
+}
+
+.crop-editor__image--transparent {
+  background: transparent;
 }
 
 .crop-editor__actions {
